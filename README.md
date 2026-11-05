@@ -100,6 +100,12 @@ source /path/to/tabui/shell/tabui.bash
 
 Requires Go 1.22+ and [golangci-lint](https://golangci-lint.run/) for linting.
 
+Once per clone, point Git at the tracked hooks (runs `golangci-lint` before each commit):
+
+```bash
+git config core.hooksPath .githooks
+```
+
 ```bash
 # run unit tests
 go test ./...
