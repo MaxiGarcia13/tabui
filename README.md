@@ -44,18 +44,18 @@ Or from a clone:
 go install ./cmd/tabui
 ```
 
-2. Source the shell widget (adjust the path if you cloned the repo):
+2. Enable the Tab widget — add one line to your shell rc:
 
-**zsh** — add to `~/.zshrc`:
+**zsh** — `~/.zshrc`:
 
 ```zsh
-source /path/to/tabui/shell/tabui.zsh
+eval "$(tabui init zsh)"
 ```
 
-**bash** — add to `~/.bashrc`:
+**bash** — `~/.bashrc`:
 
 ```bash
-source /path/to/tabui/shell/tabui.bash
+eval "$(tabui init bash)"
 ```
 
 3. Open a new shell (or re-source your rc file).
@@ -67,7 +67,7 @@ Try in a Node project: `pnpm ` + **Tab** → tool commands and scripts; `pnpm ru
 | Scope | zsh | bash |
 |-------|-----|------|
 | This session | `bindkey '^I' expand-or-complete` | `bind '"\t": complete'` |
-| Permanent | Remove the `source …/shell/tabui.*` line from your rc file | same |
+| Permanent | Remove the `eval "$(tabui init …)"` line from your rc file | same |
 
 ## Contributing
 

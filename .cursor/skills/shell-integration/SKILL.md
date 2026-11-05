@@ -11,11 +11,12 @@ description: >-
 Goal: keybinding grabs the current line → runs `tabui` → inserts the chosen
 `Value` (or falls back / no-ops when empty).
 
-Canonical scripts live in the repo:
+Canonical scripts (embedded into the binary via `tabui init`):
 
-- `shell/tabui.zsh`
-- `shell/tabui.bash`
+- `internal/shellinit/tabui.zsh`
+- `internal/shellinit/tabui.bash`
 
+Users enable with `eval "$(tabui init zsh)"` or `eval "$(tabui init bash)"`.
 Keep README enable/disable docs in sync with those files and with CLI flags.
 
 ## Contract with the binary
@@ -29,7 +30,7 @@ Keep README enable/disable docs in sync with those files and with CLI flags.
 
 ## zsh (preferred)
 
-Source `shell/tabui.zsh` from `~/.zshrc`. Widget:
+`tabui init zsh` prints the widget script. Widget:
 
 1. Calls `tabui --line="$BUFFER" --cursor="$CURSOR" --cwd="$PWD"`
 2. Sets `LBUFFER` to tabui’s stdout (full left side, e.g. `pnpm run build`)
@@ -40,8 +41,9 @@ Disable this session: `bindkey '^I' expand-or-complete`
 
 ## bash
 
-Source `shell/tabui.bash`. Same flags via `READLINE_LINE` / `READLINE_POINT`.
-Bound with `bind -x '"\t": tabui-complete'` (replaces default Tab completion).
+`tabui init bash` prints the widget script. Same flags via `READLINE_LINE` /
+`READLINE_POINT`. Bound with `bind -x '"\t": tabui-complete'` (replaces default
+Tab completion).
 
 Disable this session: `bind '"\t": complete'`
 

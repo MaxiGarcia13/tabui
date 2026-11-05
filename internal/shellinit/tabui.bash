@@ -1,6 +1,6 @@
 # tabui bash integration
-# Usage: source /path/to/tabui/shell/tabui.bash
-# Requires: `tabui` on PATH (go install ./cmd/tabui)
+# Usage: eval "$(tabui init bash)"
+# Requires: `tabui` on PATH
 # Requires: bash with readline (bind -x)
 #
 # On success, tabui prints the full new left-of-cursor text

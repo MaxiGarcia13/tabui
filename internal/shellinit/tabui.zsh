@@ -1,6 +1,6 @@
 # tabui zsh integration
-# Usage: source /path/to/tabui/shell/tabui.zsh
-# Requires: `tabui` on PATH (go install ./cmd/tabui)
+# Usage: eval "$(tabui init zsh)"
+# Requires: `tabui` on PATH
 #
 # On success, tabui prints the full new LBUFFER (e.g. "pnpm run build").
 

@@ -42,11 +42,11 @@ Provider tests live next to the code (e.g. `internal/package_scripts/`, fixtures
 ## Layout
 
 ```text
-cmd/tabui/           # binary entry — wire only
-internal/<feature>/  # providers, matching, domain types
-internal/ui/         # Charm TUI (Bubble Tea / Lip Gloss)
-internal/<name>/     # shared helpers only when reused (named packages)
-shell/               # zsh / bash keybindings
+cmd/tabui/              # binary entry — wire only
+internal/<feature>/     # providers, matching, domain types
+internal/ui/            # Charm TUI (Bubble Tea / Lip Gloss)
+internal/shellinit/     # embedded zsh / bash widgets (`tabui init`)
+internal/<name>/        # shared helpers only when reused (named packages)
 ```
 
 ## Providers

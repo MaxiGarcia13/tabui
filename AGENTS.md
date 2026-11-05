@@ -21,6 +21,7 @@ Go CLI + Charm TUI: given the current shell line and cwd, suggest the **next tok
 cmd/tabui/              # main — wire only
 internal/path/          # path provider
 internal/package_scripts/
+internal/shellinit/     # embedded zsh / bash widgets (`tabui init`)
 internal/ui/            # Bubble Tea / Lip Gloss only
 internal/fuzzy/         # example shared helper — only if 2+ callers
 ```
