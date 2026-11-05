@@ -43,6 +43,10 @@ func (state pickerState) View() string {
       prefix = cursorGlyph
       label = selectedStyle.Render(item.Label)
     }
+    if item.Detail == "" {
+      fmt.Fprintf(&view, "%s%s\n", prefix, label)
+      continue
+    }
     detail := detailStyle.Render(item.Detail)
     fmt.Fprintf(&view, "%s%s  %s\n", prefix, label, detail)
   }

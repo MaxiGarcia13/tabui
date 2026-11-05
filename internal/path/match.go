@@ -56,10 +56,6 @@ func parseCompletion(line string) completion {
 		partial = words[len(words)-1]
 	}
 
-	if strings.HasPrefix(partial, "-") {
-		return completion{}
-	}
-
 	return completion{
 		ok:       true,
 		command:  command,

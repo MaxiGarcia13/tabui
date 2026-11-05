@@ -14,7 +14,37 @@ func Suggest(ctx suggest.Context) []suggest.Suggestion {
 	if !current.ok {
 		return nil
 	}
+	if strings.HasPrefix(current.partial, "-") {
+		return suggestOptions(current.command, current.partial)
+	}
 	return suggestPaths(ctx.Cwd, current.partial, current.dirsOnly)
+}
+
+func suggestOptions(command, partial string) []suggest.Suggestion {
+	options, ok := commandOptions[command]
+	if !ok {
+		return nil
+	}
+
+	matched := make([]commandOption, 0, len(options))
+	for _, option := range options {
+		if matchesPrefix(option.value, partial) {
+			matched = append(matched, option)
+		}
+	}
+	sort.Slice(matched, func(left, right int) bool {
+		return matched[left].value < matched[right].value
+	})
+
+	suggestions := make([]suggest.Suggestion, 0, len(matched))
+	for _, option := range matched {
+		suggestions = append(suggestions, suggest.Suggestion{
+			Label:  option.value,
+			Detail: option.detail,
+			Value:  option.value,
+		})
+	}
+	return suggestions
 }
 
 func suggestPaths(
@@ -62,9 +92,13 @@ func suggestPaths(
 			label += "/"
 		}
 		value := dirPart + label
+		detail := detailFor(absCwd, listDir, name, isDir, value)
+		if detail == label {
+			detail = ""
+		}
 		matched = append(matched, suggest.Suggestion{
 			Label:  label,
-			Detail: detailFor(absCwd, listDir, name, isDir, value),
+			Detail: detail,
 			Value:  value,
 		})
 	}

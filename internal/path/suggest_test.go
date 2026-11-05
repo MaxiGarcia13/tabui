@@ -69,6 +69,43 @@ func TestSuggestInsideDirectory(t *testing.T) {
 	}
 }
 
+func TestSuggestOptions(t *testing.T) {
+	suggestions := Suggest(suggest.Context{
+		Line:   "cd --",
+		Cursor: len("cd --"),
+		Cwd:    t.TempDir(),
+	})
+	if len(suggestions) != 1 {
+		t.Fatalf("len = %d, want 1: %+v", len(suggestions), suggestions)
+	}
+	item := suggestions[0]
+	if item.Label != "--" || item.Value != "--" {
+		t.Fatalf("got %+v", item)
+	}
+	if item.Detail == "" {
+		t.Fatal("expected option detail")
+	}
+}
+
+func TestSuggestOptionsPartial(t *testing.T) {
+	suggestions := Suggest(suggest.Context{
+		Line:   "cp -r",
+		Cursor: len("cp -r"),
+		Cwd:    t.TempDir(),
+	})
+	if !containsLabel(suggestions, "-r") {
+		t.Fatalf("missing -r in %+v", suggestions)
+	}
+	if !containsLabel(suggestions, "-R") {
+		t.Fatalf("missing -R in %+v", suggestions)
+	}
+	for _, item := range suggestions {
+		if item.Detail == "" {
+			t.Fatalf("expected detail for %+v", item)
+		}
+	}
+}
+
 func TestSuggestCdDirsOnly(t *testing.T) {
 	workingDir := fixtureRoot(t)
 	suggestions := Suggest(suggest.Context{
@@ -81,6 +118,11 @@ func TestSuggestCdDirsOnly(t *testing.T) {
 	}
 	if containsLabel(suggestions, "file.txt") {
 		t.Fatalf("unexpected file.txt in %+v", suggestions)
+	}
+	for _, item := range suggestions {
+		if item.Label == "dir/" && item.Detail != "" {
+			t.Fatalf("cwd dir detail should be empty, got %+v", item)
+		}
 	}
 }
 
