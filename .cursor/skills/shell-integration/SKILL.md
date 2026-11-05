@@ -8,46 +8,40 @@ description: >-
 
 # Shell integration
 
-Goal: keybinding grabs the current line → runs `tabui` → inserts the chosen `Value` (or no-ops on cancel).
+Goal: keybinding grabs the current line → runs `tabui` → inserts the chosen
+`Value` (or no-ops on cancel).
+
+Canonical scripts live in the repo:
+
+- `shell/tabui.zsh`
+- `shell/tabui.bash`
+
+Keep README enable/disable docs in sync with those files and with CLI flags.
 
 ## Contract with the binary
 
-- Pass current line + cursor (flags or stdin; match whatever `cmd/tabui` exposes).
+- Flags: `--line`, `--cursor`, `--cwd` (see `cmd/tabui`).
 - On success: print **only** the insert token on stdout (no UI chrome).
 - Non-zero exit or empty stdout → leave the line unchanged.
-- TUI uses stderr / the terminal directly so stdout stays clean for the shell.
+- TUI uses `/dev/tty` (fallback stderr) so stdout stays clean for the shell.
 
 ## zsh (preferred)
 
-```zsh
-tabui-complete() {
-  local selected
-  selected="$(tabui --line="$BUFFER" --cursor="$CURSOR")" || return
-  [[ -n "$selected" ]] || return
-  LBUFFER="${LBUFFER}${selected}"
-}
-zle -N tabui-complete
-bindkey '^@' tabui-complete
-```
+Source `shell/tabui.zsh` from `~/.zshrc`. Widget:
 
-Notes:
+1. Calls `tabui --line="$BUFFER" --cursor="$CURSOR" --cwd="$PWD"`
+2. Replaces the partial token at the cursor (or appends after a prefix word /
+   trailing space)
+3. Bound to `^@` (Ctrl+Space on many terminals)
 
-- `^@` is often Ctrl+Space; some terminals need a different sequence — document both if needed.
-- Prefer replacing/appending at the cursor word once CLI supports partial-token replace; until then append to `LBUFFER` is the sketch default.
-- Keep the widget in repo docs (README) in sync with real flags.
+Disable this session: `bindkey -r '^@'`
 
 ## bash
 
-```bash
-tabui-complete() {
-  local selected
-  selected="$(tabui --line="$READLINE_LINE" --cursor="$READLINE_POINT")" || return
-  [[ -n "$selected" ]] || return
-  READLINE_LINE="${READLINE_LINE:0:READLINE_POINT}${selected}${READLINE_LINE:READLINE_POINT}"
-  READLINE_POINT=$((READLINE_POINT + ${#selected}))
-}
-bind -x '"\C-@": tabui-complete'
-```
+Source `shell/tabui.bash`. Same flags via `READLINE_LINE` / `READLINE_POINT`.
+Bound with `bind -x '"\C-@": tabui-complete'`.
+
+Disable this session: `bind -r "\C-@"`
 
 ## Do not
 

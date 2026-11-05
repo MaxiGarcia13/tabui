@@ -46,29 +46,46 @@ internal/<name>/     # shared helpers only when reused (named packages)
 
 Primary target: **shell-friendly**, terminal-agnostic.
 
-- Go binary accepts the current command line / cursor word (args or stdin).
-- Bind a key in zsh/bash (e.g. Ctrl+Space) that:
-  1. grabs the current line
-  2. calls tabui
-  3. inserts the selected suggestion back into the line
-
-Also supports standalone modes where useful (e.g. script picker only).
+While you compose a command, press **Ctrl+Space** to open the fuzzy TUI of
+next-token suggestions, pick one, and insert it into the line.
 
 Does **not** require a specific terminal app (not Warp-only, not VS Code-extension-only).
 
-### Shell keybinding (sketch)
+### Enable (zsh)
+
+1. Install the binary onto your `PATH`:
+
+```bash
+go install ./cmd/tabui
+# or: go build -o tabui ./cmd/tabui && mv tabui "$(go env GOPATH)/bin/"
+```
+
+2. Source the widget from this repo in `~/.zshrc` (adjust the path):
 
 ```zsh
-# ~/.zshrc — example; finalize once the binary CLI flags are stable
-tabui-complete() {
-  local selected
-  selected="$(tabui --line="$BUFFER" --cursor="$CURSOR")" || return
-  [[ -n "$selected" ]] || return
-  LBUFFER="${LBUFFER}${selected}"
-}
-zle -N tabui-complete
-bindkey '^@' tabui-complete  # Ctrl+Space (may vary by terminal)
+source /path/to/tabui/shell/tabui.zsh
 ```
+
+3. Open a new shell (or `source ~/.zshrc`).
+
+Try: type `pnpm run ` in a Node project, press **Ctrl+Space**, pick a script.
+
+### Enable (bash)
+
+```bash
+source /path/to/tabui/shell/tabui.bash
+```
+
+### Disable
+
+| Scope | zsh | bash |
+|-------|-----|------|
+| This session | `bindkey -r '^@'` | `bind -r "\C-@"` |
+| Permanent | Remove the `source …/shell/tabui.*` line from your rc file | same |
+
+Some terminals use a different sequence for Ctrl+Space; if the key does nothing,
+check the terminal’s keybinding settings or change the `bindkey` / `bind` line
+in the sourced file.
 
 ## Tech
 
