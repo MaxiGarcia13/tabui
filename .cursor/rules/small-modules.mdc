@@ -7,5 +7,5 @@ alwaysApply: true
 
 - Keep packages and functions small, with a single clear responsibility.
 - Prefer splitting into focused files over growing one large file.
-- Follow [project-structure](project-structure.mdc): feature folders under `src/domain`, TUI in `src/ui`, shared helpers in `src/utils`.
-- Extract a helper into its own file in the **same** feature folder first; move to `src/utils` only when reused.
+- Follow [project-structure](project-structure.mdc): features under `internal/<feature>`, TUI in `internal/ui`, shared code only as named packages when reused.
+- Extract a helper into its own file in the **same** feature package first; promote only on a second caller.

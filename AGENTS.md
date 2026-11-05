@@ -12,24 +12,25 @@ Go CLI + Charm TUI: given the current shell line and cwd, suggest the **next tok
 
 - Build a terminal emulator or Warp-style overlay
 - Put provider / filesystem / manifest logic in the TUI
-- Put rendering in domain
+- Put rendering in provider packages
 - Require Node (or other runtimes) to read project files
 - Aim to complete every CLI in v1
 
 ## Layout
 
 ```text
-cmd/ or main.go   # wire only
-src/domain/       # providers, matching, domain types/constants
-src/ui/           # Bubble Tea / Lip Gloss only
-src/utils/        # helpers only when used by 2+ callers
+cmd/tabui/              # main — wire only
+internal/path/          # path provider
+internal/package_scripts/
+internal/ui/            # Bubble Tea / Lip Gloss only
+internal/fuzzy/         # example shared helper — only if 2+ callers
 ```
 
-Colocate feature-local types and helpers under `src/domain/<feature>/`. Promote to `utils` only on a second caller.
+Colocate feature-local types and helpers under `internal/<feature>/`. Promote to a named `internal/<name>` package only on a second caller — no dump `utils`.
 
 ## Providers
 
-Under `src/domain/<feature>/`:
+Under `internal/<feature>/`:
 
 1. **Match** — does this provider apply to the cmdline context?
 2. **Suggest** — return `[]Suggestion`; never render

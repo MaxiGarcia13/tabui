@@ -33,12 +33,13 @@ Provider model — easy to extend without rewriting the TUI:
 
 The TUI only renders `label`, `detail`, and the value to insert.
 
-Layout (see project rules):
+Layout (standard Go):
 
 ```text
-src/domain/   # providers, business logic, domain types
-src/ui/       # Charm TUI
-src/utils/    # shared helpers (only when reused)
+cmd/tabui/           # binary entry
+internal/<feature>/  # providers, matching, domain types
+internal/ui/         # Charm TUI
+internal/<name>/     # shared helpers only when reused (named packages)
 ```
 
 ## Integration
