@@ -66,6 +66,23 @@ Try: `pnpm ` + **Tab** → tool commands and scripts; `mv ` + **Tab** → files 
 | This session | `bindkey '^I' expand-or-complete` | `bind '"\t": complete'` |
 | Permanent | Remove the `eval "$(tabui init …)"` line from your rc file | same |
 
+## Update
+
+Re-run the install command. `go install` replaces the binary already on your `PATH`:
+
+```bash
+go install github.com/MaxiGarcia13/tabui/cmd/tabui@latest
+```
+
+From a clone:
+
+```bash
+git pull
+go install ./cmd/tabui
+```
+
+Check the installed version with `tabui -version`. Then open a new shell (or re-source your rc file) so `eval "$(tabui init …)"` loads the widget from the new binary.
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, tests, and layout.
