@@ -8,12 +8,52 @@ import (
 )
 
 func Suggest(ctx suggest.Context) []suggest.Suggestion {
-  partial, matched := scriptPartial(lineUpToCursor(ctx))
-  if !matched {
+  current := parseCompletion(lineUpToCursor(ctx))
+  switch current.kind {
+  case completionToolCommands:
+    return suggestToolCommands(current.tool, current.partial)
+  case completionScripts:
+    return suggestScripts(ctx.Cwd, current.partial)
+  default:
+    return nil
+  }
+}
+
+func suggestToolCommands(
+  tool string,
+  partial string,
+) []suggest.Suggestion {
+  options, ok := toolCommands[tool]
+  if !ok {
     return nil
   }
 
-  packageJSONPath, err := findNearestPackageJSON(ctx.Cwd)
+  matched := make([]commandOption, 0, len(options))
+  for _, option := range options {
+    if matchesPartial(option.value, partial) {
+      matched = append(matched, option)
+    }
+  }
+  sort.Slice(matched, func(left, right int) bool {
+    return matched[left].value < matched[right].value
+  })
+
+  suggestions := make([]suggest.Suggestion, 0, len(matched))
+  for _, option := range matched {
+    suggestions = append(suggestions, suggest.Suggestion{
+      Label:  option.value,
+      Detail: option.detail,
+      Value:  option.value,
+    })
+  }
+  return suggestions
+}
+
+func suggestScripts(
+  workingDir string,
+  partial string,
+) []suggest.Suggestion {
+  packageJSONPath, err := findNearestPackageJSON(workingDir)
   if err != nil {
     return nil
   }
@@ -42,12 +82,12 @@ func Suggest(ctx suggest.Context) []suggest.Suggestion {
   return suggestions
 }
 
-func matchesPartial(scriptName, partial string) bool {
+func matchesPartial(name, partial string) bool {
   if partial == "" {
     return true
   }
   return strings.HasPrefix(
-    strings.ToLower(scriptName),
+    strings.ToLower(name),
     strings.ToLower(partial),
   )
 }

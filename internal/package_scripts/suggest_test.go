@@ -7,7 +7,40 @@ import (
   "github.com/MaxiGarcia13/tabui/internal/suggest"
 )
 
-func TestSuggestFromNearestPackageJSON(t *testing.T) {
+func TestSuggestToolCommands(t *testing.T) {
+  suggestions := Suggest(suggest.Context{
+    Line:   "npm ",
+    Cursor: len("npm "),
+    Cwd:    t.TempDir(),
+  })
+  if len(suggestions) == 0 {
+    t.Fatal("expected tool command suggestions")
+  }
+  if !containsLabel(suggestions, "run") {
+    t.Fatalf("missing run in %+v", suggestions)
+  }
+  if !containsLabel(suggestions, "--help") {
+    t.Fatalf("missing --help in %+v", suggestions)
+  }
+}
+
+func TestSuggestToolCommandsFilter(t *testing.T) {
+  suggestions := Suggest(suggest.Context{
+    Line:   "pnpm in",
+    Cursor: len("pnpm in"),
+    Cwd:    t.TempDir(),
+  })
+  if len(suggestions) == 0 {
+    t.Fatal("expected filtered commands")
+  }
+  for _, item := range suggestions {
+    if item.Label != "install" && item.Label != "init" {
+      t.Fatalf("unexpected label %q in %+v", item.Label, suggestions)
+    }
+  }
+}
+
+func TestSuggestScriptsFromNearestPackageJSON(t *testing.T) {
   workingDir := filepath.Join("testdata", "project")
   suggestions := Suggest(suggest.Context{
     Line:   "pnpm run ",
@@ -26,7 +59,7 @@ func TestSuggestFromNearestPackageJSON(t *testing.T) {
   }
 }
 
-func TestSuggestWalksUpFromNested(t *testing.T) {
+func TestSuggestScriptsWalksUpFromNested(t *testing.T) {
   workingDir := filepath.Join("testdata", "project", "nested")
   suggestions := Suggest(suggest.Context{
     Line:   "npm run ",
@@ -38,7 +71,7 @@ func TestSuggestWalksUpFromNested(t *testing.T) {
   }
 }
 
-func TestSuggestFiltersPartial(t *testing.T) {
+func TestSuggestScriptsFiltersPartial(t *testing.T) {
   workingDir := filepath.Join("testdata", "project")
   suggestions := Suggest(suggest.Context{
     Line:   "pnpm run te",
@@ -50,7 +83,7 @@ func TestSuggestFiltersPartial(t *testing.T) {
   }
 }
 
-func TestSuggestMissingPackageJSON(t *testing.T) {
+func TestSuggestScriptsMissingPackageJSON(t *testing.T) {
   workingDir := t.TempDir()
   suggestions := Suggest(suggest.Context{
     Line:   "pnpm run ",
@@ -59,6 +92,21 @@ func TestSuggestMissingPackageJSON(t *testing.T) {
   })
   if suggestions != nil {
     t.Fatalf("got %+v, want nil", suggestions)
+  }
+}
+
+func TestSuggestBarePnpmIsCommandsNotScripts(t *testing.T) {
+  workingDir := filepath.Join("testdata", "project")
+  suggestions := Suggest(suggest.Context{
+    Line:   "pnpm ",
+    Cursor: len("pnpm "),
+    Cwd:    workingDir,
+  })
+  if containsLabel(suggestions, "build") {
+    t.Fatalf("bare pnpm should not list scripts: %+v", suggestions)
+  }
+  if !containsLabel(suggestions, "run") {
+    t.Fatalf("bare pnpm should list run: %+v", suggestions)
   }
 }
 
@@ -72,4 +120,16 @@ func TestSuggestNoMatch(t *testing.T) {
   if suggestions != nil {
     t.Fatalf("got %+v, want nil", suggestions)
   }
+}
+
+func containsLabel(
+  suggestions []suggest.Suggestion,
+  label string,
+) bool {
+  for _, item := range suggestions {
+    if item.Label == label {
+      return true
+    }
+  }
+  return false
 }

@@ -70,7 +70,10 @@ source /path/to/tabui/shell/tabui.zsh
 
 3. Open a new shell (or `source ~/.zshrc`).
 
-Try: type `pnpm run ` in a Node project, press **Tab**, pick a script.
+Try in a Node project:
+
+- `pnpm ` + **Tab** → tool commands (`run`, `install`, …)
+- `pnpm run ` + **Tab** → scripts from `package.json`
 
 ### Enable (bash)
 
