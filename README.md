@@ -77,15 +77,25 @@ bindkey '^@' tabui-complete  # Ctrl+Space (may vary by terminal)
 - Fuzzy filter
 - JSON parsed in Go for `package.json`
 
-## Install / build
+## Development
 
-Scaffolding in progress. Once the module exists:
+Requires Go 1.22+ and [golangci-lint](https://golangci-lint.run/) for linting.
 
 ```bash
-go build -o tabui .
-# or
-go install .
+# run unit tests
+go test ./...
+
+# lint (see .golangci.yml)
+golangci-lint run ./...
+
+# build the binary
+go build -o tabui ./cmd/tabui
+
+# install onto PATH
+go install ./cmd/tabui
 ```
+
+Package-scripts provider tests live next to the code under `internal/package_scripts/` (fixtures in `testdata/`).
 
 ## Out of scope (for now)
 
