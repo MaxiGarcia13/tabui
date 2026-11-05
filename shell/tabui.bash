@@ -2,6 +2,8 @@
 # Usage: source /path/to/tabui/shell/tabui.bash
 # Requires: `tabui` on PATH (go install ./cmd/tabui)
 # Requires: bash with readline (bind -x)
+#
+# Note: binding Tab replaces default bash completion for that key.
 
 tabui-complete() {
   local selected
@@ -29,6 +31,6 @@ tabui-complete() {
   READLINE_POINT=${#new_left}
 }
 
-bind -x '"\C-@": tabui-complete'
+bind -x '"\t": tabui-complete'
 
-# Disable in this session: bind -r "\C-@"
+# Disable in this session: bind '"\t": complete'

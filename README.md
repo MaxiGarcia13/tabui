@@ -46,8 +46,10 @@ internal/<name>/     # shared helpers only when reused (named packages)
 
 Primary target: **shell-friendly**, terminal-agnostic.
 
-While you compose a command, press **Ctrl+Space** to open the fuzzy TUI of
-next-token suggestions, pick one, and insert it into the line.
+While you compose a command, press **Tab** to open the fuzzy TUI of
+next-token suggestions (when a provider matches), pick one, and insert it
+into the line. If tabui has nothing to suggest, zsh falls back to normal
+completion.
 
 Does **not** require a specific terminal app (not Warp-only, not VS Code-extension-only).
 
@@ -68,7 +70,7 @@ source /path/to/tabui/shell/tabui.zsh
 
 3. Open a new shell (or `source ~/.zshrc`).
 
-Try: type `pnpm run ` in a Node project, press **Ctrl+Space**, pick a script.
+Try: type `pnpm run ` in a Node project, press **Tab**, pick a script.
 
 ### Enable (bash)
 
@@ -80,12 +82,8 @@ source /path/to/tabui/shell/tabui.bash
 
 | Scope | zsh | bash |
 |-------|-----|------|
-| This session | `bindkey -r '^@'` | `bind -r "\C-@"` |
+| This session | `bindkey '^I' expand-or-complete` | `bind '"\t": complete'` |
 | Permanent | Remove the `source …/shell/tabui.*` line from your rc file | same |
-
-Some terminals use a different sequence for Ctrl+Space; if the key does nothing,
-check the terminal’s keybinding settings or change the `bindkey` / `bind` line
-in the sourced file.
 
 ## Tech
 

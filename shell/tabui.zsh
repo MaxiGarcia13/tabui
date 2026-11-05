@@ -6,8 +6,14 @@ tabui-complete() {
   local selected
   selected="$(
     tabui --line="$BUFFER" --cursor="$CURSOR" --cwd="$PWD"
-  )" || return
-  [[ -n "$selected" ]] || return
+  )" || {
+    zle expand-or-complete
+    return
+  }
+  if [[ -z "$selected" ]]; then
+    zle expand-or-complete
+    return
+  fi
 
   local last_word="${LBUFFER##* }"
   if [[ -z "$LBUFFER" || "$LBUFFER" == *[[:space:]] ]]; then
@@ -20,6 +26,6 @@ tabui-complete() {
 }
 
 zle -N tabui-complete
-bindkey '^@' tabui-complete
+bindkey '^I' tabui-complete
 
-# Disable in this session: bindkey -r '^@'
+# Disable in this session: bindkey '^I' expand-or-complete

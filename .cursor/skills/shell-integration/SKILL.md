@@ -1,7 +1,7 @@
 ---
 name: shell-integration
 description: >-
-  Documents and edits zsh/bash keybindings for tabui. Use when wiring Ctrl+Space
+  Documents and edits zsh/bash keybindings for tabui. Use when wiring Tab
   (or similar), grabbing BUFFER/READLINE_LINE, invoking the tabui binary, inserting
   the selected token, or fixing shell completion widgets.
 ---
@@ -9,7 +9,7 @@ description: >-
 # Shell integration
 
 Goal: keybinding grabs the current line → runs `tabui` → inserts the chosen
-`Value` (or no-ops on cancel).
+`Value` (or falls back / no-ops when empty).
 
 Canonical scripts live in the repo:
 
@@ -22,7 +22,8 @@ Keep README enable/disable docs in sync with those files and with CLI flags.
 
 - Flags: `--line`, `--cursor`, `--cwd` (see `cmd/tabui`).
 - On success: print **only** the insert token on stdout (no UI chrome).
-- Non-zero exit or empty stdout → leave the line unchanged.
+- Non-zero exit or empty stdout → leave the line unchanged (zsh: fall back to
+  `expand-or-complete`).
 - TUI uses `/dev/tty` (fallback stderr) so stdout stays clean for the shell.
 
 ## zsh (preferred)
@@ -32,16 +33,17 @@ Source `shell/tabui.zsh` from `~/.zshrc`. Widget:
 1. Calls `tabui --line="$BUFFER" --cursor="$CURSOR" --cwd="$PWD"`
 2. Replaces the partial token at the cursor (or appends after a prefix word /
    trailing space)
-3. Bound to `^@` (Ctrl+Space on many terminals)
+3. Bound to `^I` (Tab)
+4. On empty/error: `zle expand-or-complete` so normal Tab completion still works
 
-Disable this session: `bindkey -r '^@'`
+Disable this session: `bindkey '^I' expand-or-complete`
 
 ## bash
 
 Source `shell/tabui.bash`. Same flags via `READLINE_LINE` / `READLINE_POINT`.
-Bound with `bind -x '"\C-@": tabui-complete'`.
+Bound with `bind -x '"\t": tabui-complete'` (replaces default Tab completion).
 
-Disable this session: `bind -r "\C-@"`
+Disable this session: `bind '"\t": complete'`
 
 ## Do not
 
