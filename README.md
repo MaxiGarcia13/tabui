@@ -95,6 +95,14 @@ go build -o tabui ./cmd/tabui
 go install ./cmd/tabui
 ```
 
+Try the package-scripts picker (interactive TTY required):
+
+```bash
+go run ./cmd/tabui --line="pnpm run " --cwd=/path/to/node/project
+```
+
+On success, the chosen script name is printed on stdout (for shell insert). Esc / Ctrl+C cancels with no output.
+
 Package-scripts provider tests live next to the code under `internal/package_scripts/` (fixtures in `testdata/`).
 
 ## Out of scope (for now)
