@@ -97,17 +97,29 @@ jobs:
           fi
 
           tag="v${new}"
+          if git rev-parse "$tag" >/dev/null 2>&1; then
+            echo "tag ${tag} already exists" >&2
+            echo "release_created=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
           sed -i "s/^const version = \".*\"/const version = \"${new}\"/" \
             cmd/tabui/main.go
 
           git config user.name "github-actions[bot]"
           git config user.email \
             "41898282+github-actions[bot]@users.noreply.github.com"
+
           git add cmd/tabui/main.go
-          git commit -m "chore: release ${tag} [skip ci]"
-          git tag "$tag"
-          git push origin HEAD:main
-          git push origin "$tag"
+          if git diff --staged --quiet; then
+            git tag "$tag"
+            git push origin "$tag"
+          else
+            git commit -m "chore: release ${tag} [skip ci]"
+            git tag "$tag"
+            git push origin HEAD:main
+            git push origin "$tag"
+          fi
 
           echo "release_created=true" >> "$GITHUB_OUTPUT"
           echo "tag_name=${tag}" >> "$GITHUB_OUTPUT"
