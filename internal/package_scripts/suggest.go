@@ -11,12 +11,45 @@ func Suggest(ctx suggest.Context) []suggest.Suggestion {
   current := parseCompletion(lineUpToCursor(ctx))
   switch current.kind {
   case completionToolCommands:
-    return suggestToolCommands(current.tool, current.partial)
+    return suggestToolLevel(
+      ctx.Cwd,
+      current.tool,
+      current.partial,
+    )
   case completionScripts:
-    return suggestScripts(ctx.Cwd, current.partial)
+    return suggestScripts(ctx.Cwd, current.partial, false)
   default:
     return nil
   }
+}
+
+func suggestToolLevel(
+  workingDir string,
+  tool string,
+  partial string,
+) []suggest.Suggestion {
+  suggestions := suggestToolCommands(tool, partial)
+  commandNames := commandNameSet(tool)
+  scripts := suggestScripts(workingDir, partial, true)
+  for _, script := range scripts {
+    if _, exists := commandNames[script.Label]; exists {
+      continue
+    }
+    suggestions = append(suggestions, script)
+  }
+  return suggestions
+}
+
+func commandNameSet(tool string) map[string]struct{} {
+  options, ok := toolCommands[tool]
+  if !ok {
+    return nil
+  }
+  names := make(map[string]struct{}, len(options))
+  for _, option := range options {
+    names[option.value] = struct{}{}
+  }
+  return names
 }
 
 func suggestToolCommands(
@@ -49,9 +82,12 @@ func suggestToolCommands(
   return suggestions
 }
 
+// suggestScripts lists package scripts. When withRunPrefix is true (tool
+// level), Value is "run <name>" so the line becomes e.g. "pnpm run build".
 func suggestScripts(
   workingDir string,
   partial string,
+  withRunPrefix bool,
 ) []suggest.Suggestion {
   packageJSONPath, err := findNearestPackageJSON(workingDir)
   if err != nil {
@@ -73,10 +109,16 @@ func suggestScripts(
 
   suggestions := make([]suggest.Suggestion, 0, len(scriptNames))
   for _, scriptName := range scriptNames {
+    value := scriptName
+    detail := scripts[scriptName]
+    if withRunPrefix {
+      value = "run " + scriptName
+      detail = "script: " + detail
+    }
     suggestions = append(suggestions, suggest.Suggestion{
       Label:  scriptName,
-      Detail: scripts[scriptName],
-      Value:  scriptName,
+      Detail: detail,
+      Value:  value,
     })
   }
   return suggestions

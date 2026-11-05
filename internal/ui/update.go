@@ -6,6 +6,11 @@ func (state pickerState) Update(
   message tea.Msg,
 ) (tea.Model, tea.Cmd) {
   switch message := message.(type) {
+  case tea.WindowSizeMsg:
+    if message.Height > 0 {
+      state.height = message.Height
+    }
+    state.ensureCursorVisible()
   case tea.KeyMsg:
     switch message.Type {
     case tea.KeyCtrlC, tea.KeyEsc:
@@ -21,11 +26,36 @@ func (state pickerState) Update(
     case tea.KeyUp:
       if state.cursor > 0 {
         state.cursor--
+        state.ensureCursorVisible()
       }
     case tea.KeyDown:
       if state.cursor < len(state.filtered)-1 {
         state.cursor++
+        state.ensureCursorVisible()
       }
+    case tea.KeyPgUp:
+      state.cursor -= state.visibleCapacity()
+      if state.cursor < 0 {
+        state.cursor = 0
+      }
+      state.ensureCursorVisible()
+    case tea.KeyPgDown:
+      state.cursor += state.visibleCapacity()
+      if state.cursor > len(state.filtered)-1 {
+        state.cursor = len(state.filtered) - 1
+      }
+      if state.cursor < 0 {
+        state.cursor = 0
+      }
+      state.ensureCursorVisible()
+    case tea.KeyHome:
+      state.cursor = 0
+      state.ensureCursorVisible()
+    case tea.KeyEnd:
+      if len(state.filtered) > 0 {
+        state.cursor = len(state.filtered) - 1
+      }
+      state.ensureCursorVisible()
     case tea.KeyBackspace:
       if len(state.query) > 0 {
         state.query = state.query[:len(state.query)-1]

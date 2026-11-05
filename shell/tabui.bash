@@ -3,29 +3,18 @@
 # Requires: `tabui` on PATH (go install ./cmd/tabui)
 # Requires: bash with readline (bind -x)
 #
+# On success, tabui prints the full new left-of-cursor text
+# (e.g. "pnpm run build").
+#
 # Note: binding Tab replaces default bash completion for that key.
 
 tabui-complete() {
-  local selected
-  selected="$(
+  local new_left
+  local right="${READLINE_LINE:READLINE_POINT}"
+  new_left="$(
     tabui --line="$READLINE_LINE" --cursor="$READLINE_POINT" --cwd="$PWD"
   )" || return
-  [[ -n "$selected" ]] || return
-
-  local left="${READLINE_LINE:0:READLINE_POINT}"
-  local right="${READLINE_LINE:READLINE_POINT}"
-  local last_word="${left##* }"
-  local new_left
-
-  if [[ -z "$left" || "$left" == *[[:space:]] ]]; then
-    new_left="${left}${selected}"
-  elif [[ "$last_word" == run || "$last_word" == run-script \
-    || "$last_word" == npm || "$last_word" == pnpm \
-    || "$last_word" == yarn || "$last_word" == bun ]]; then
-    new_left="${left} ${selected}"
-  else
-    new_left="${left%"${last_word}"}${selected}"
-  fi
+  [[ -n "$new_left" ]] || return
 
   READLINE_LINE="${new_left}${right}"
   READLINE_POINT=${#new_left}

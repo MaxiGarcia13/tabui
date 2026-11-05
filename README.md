@@ -72,8 +72,9 @@ source /path/to/tabui/shell/tabui.zsh
 
 Try in a Node project:
 
-- `pnpm ` + **Tab** → tool commands (`run`, `install`, …)
-- `pnpm run ` + **Tab** → scripts from `package.json`
+- `pnpm ` + **Tab** → tool commands **and** scripts (picking a script
+  inserts `run <name>`, e.g. `pnpm run build`)
+- `pnpm run ` + **Tab** → scripts only
 
 ### Enable (bash)
 

@@ -3,18 +3,40 @@ package ui
 import (
   "fmt"
   "strings"
+
+  "github.com/MaxiGarcia13/tabui/internal/cmdline"
 )
 
 func (state pickerState) View() string {
   var view strings.Builder
+
+  preview := state.linePrefix
+  if len(state.filtered) > 0 {
+    preview = cmdline.InsertToken(
+      state.linePrefix,
+      state.filtered[state.cursor].Value,
+    )
+  }
+  view.WriteString(queryStyle.Render("→ " + preview))
+  view.WriteString("\n")
   view.WriteString(queryStyle.Render("filter: " + state.query))
   view.WriteString("\n")
+
   if len(state.filtered) == 0 {
     view.WriteString(detailStyle.Render("no matches"))
     view.WriteString("\n")
     return view.String()
   }
-  for index, item := range state.filtered {
+
+  capacity := state.visibleCapacity()
+  start := state.offset
+  end := start + capacity
+  if end > len(state.filtered) {
+    end = len(state.filtered)
+  }
+
+  for index := start; index < end; index++ {
+    item := state.filtered[index]
     prefix := padGlyph
     label := normalStyle.Render(item.Label)
     if index == state.cursor {
@@ -24,5 +46,16 @@ func (state pickerState) View() string {
     detail := detailStyle.Render(item.Detail)
     fmt.Fprintf(&view, "%s%s  %s\n", prefix, label, detail)
   }
+
+  status := fmt.Sprintf(
+    "%d/%d",
+    state.cursor+1,
+    len(state.filtered),
+  )
+  if start > 0 || end < len(state.filtered) {
+    status += "  ↑↓ scroll"
+  }
+  view.WriteString(detailStyle.Render(status))
+  view.WriteString("\n")
   return view.String()
 }

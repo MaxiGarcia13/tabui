@@ -5,6 +5,7 @@ import (
   "fmt"
   "os"
 
+  "github.com/MaxiGarcia13/tabui/internal/cmdline"
   "github.com/MaxiGarcia13/tabui/internal/package_scripts"
   "github.com/MaxiGarcia13/tabui/internal/suggest"
   "github.com/MaxiGarcia13/tabui/internal/ui"
@@ -50,7 +51,12 @@ func main() {
     return
   }
 
-  selected, err := ui.Run(suggestions)
+  linePrefix := *line
+  if cursorOffset < len(linePrefix) {
+    linePrefix = linePrefix[:cursorOffset]
+  }
+
+  selected, err := ui.Run(suggestions, linePrefix)
   if err != nil {
     fmt.Fprintf(os.Stderr, "tabui: %v\n", err)
     os.Exit(1)
@@ -59,5 +65,6 @@ func main() {
     return
   }
 
-  fmt.Print(selected)
+  // Print the new left-of-cursor line so the shell shows e.g. "pnpm run build".
+  fmt.Print(cmdline.InsertToken(linePrefix, selected))
 }

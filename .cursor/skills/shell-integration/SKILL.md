@@ -21,18 +21,18 @@ Keep README enable/disable docs in sync with those files and with CLI flags.
 ## Contract with the binary
 
 - Flags: `--line`, `--cursor`, `--cwd` (see `cmd/tabui`).
-- On success: print **only** the insert token on stdout (no UI chrome).
+- On success: print the **new left-of-cursor line** on stdout
+  (e.g. `pnpm run build`), not only the bare token.
 - Non-zero exit or empty stdout → leave the line unchanged (zsh: fall back to
   `expand-or-complete`).
-- TUI uses `/dev/tty` (fallback stderr) so stdout stays clean for the shell.
+- TUI uses alt screen + `/dev/tty` so the list clears and stdout stays clean.
 
 ## zsh (preferred)
 
 Source `shell/tabui.zsh` from `~/.zshrc`. Widget:
 
 1. Calls `tabui --line="$BUFFER" --cursor="$CURSOR" --cwd="$PWD"`
-2. Replaces the partial token at the cursor (or appends after a prefix word /
-   trailing space)
+2. Sets `LBUFFER` to tabui’s stdout (full left side, e.g. `pnpm run build`)
 3. Bound to `^I` (Tab)
 4. On empty/error: `zle expand-or-complete` so normal Tab completion still works
 

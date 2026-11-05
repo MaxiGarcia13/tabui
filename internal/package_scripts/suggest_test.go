@@ -95,19 +95,35 @@ func TestSuggestScriptsMissingPackageJSON(t *testing.T) {
   }
 }
 
-func TestSuggestBarePnpmIsCommandsNotScripts(t *testing.T) {
+func TestSuggestBarePnpmIncludesScriptsWithRun(t *testing.T) {
   workingDir := filepath.Join("testdata", "project")
   suggestions := Suggest(suggest.Context{
     Line:   "pnpm ",
     Cursor: len("pnpm "),
     Cwd:    workingDir,
   })
-  if containsLabel(suggestions, "build") {
-    t.Fatalf("bare pnpm should not list scripts: %+v", suggestions)
-  }
   if !containsLabel(suggestions, "run") {
     t.Fatalf("bare pnpm should list run: %+v", suggestions)
   }
+  build := findByLabel(suggestions, "build")
+  if build == nil {
+    t.Fatalf("bare pnpm should list scripts: %+v", suggestions)
+  }
+  if build.Value != "run build" {
+    t.Fatalf("build value = %q, want %q", build.Value, "run build")
+  }
+}
+
+func findByLabel(
+  suggestions []suggest.Suggestion,
+  label string,
+) *suggest.Suggestion {
+  for index := range suggestions {
+    if suggestions[index].Label == label {
+      return &suggestions[index]
+    }
+  }
+  return nil
 }
 
 func TestSuggestNoMatch(t *testing.T) {

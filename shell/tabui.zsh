@@ -1,28 +1,24 @@
 # tabui zsh integration
 # Usage: source /path/to/tabui/shell/tabui.zsh
 # Requires: `tabui` on PATH (go install ./cmd/tabui)
+#
+# On success, tabui prints the full new LBUFFER (e.g. "pnpm run build").
 
 tabui-complete() {
-  local selected
-  selected="$(
+  local new_left
+  new_left="$(
     tabui --line="$BUFFER" --cursor="$CURSOR" --cwd="$PWD"
   )" || {
     zle expand-or-complete
     return
   }
-  if [[ -z "$selected" ]]; then
+  if [[ -z "$new_left" ]]; then
     zle expand-or-complete
     return
   fi
 
-  local last_word="${LBUFFER##* }"
-  if [[ -z "$LBUFFER" || "$LBUFFER" == *[[:space:]] ]]; then
-    LBUFFER="${LBUFFER}${selected}"
-  elif [[ "$last_word" == (run|run-script|npm|pnpm|yarn|bun) ]]; then
-    LBUFFER="${LBUFFER} ${selected}"
-  else
-    LBUFFER="${LBUFFER%%[![:space:]]#}${selected}"
-  fi
+  LBUFFER="$new_left"
+  zle reset-prompt
 }
 
 zle -N tabui-complete

@@ -10,19 +10,25 @@ import (
 
 // Run shows a fuzzy list and returns the chosen Value.
 // Empty string means the user canceled.
-func Run(items []suggest.Suggestion) (string, error) {
+// linePrefix is the command line left of the cursor (for preview).
+func Run(
+  items []suggest.Suggestion,
+  linePrefix string,
+) (string, error) {
   if len(items) == 0 {
     return "", nil
   }
 
-  state := newPickerState(items)
+  state := newPickerState(items, linePrefix)
   programOptions := []tea.ProgramOption{
+    tea.WithAltScreen(),
     tea.WithOutput(os.Stderr),
   }
   tty, ttyErr := os.OpenFile("/dev/tty", os.O_RDWR, 0)
   if ttyErr == nil {
     defer tty.Close()
     programOptions = []tea.ProgramOption{
+      tea.WithAltScreen(),
       tea.WithInput(tty),
       tea.WithOutput(tty),
     }
