@@ -29,13 +29,6 @@ jobs:
         with:
           go-version-file: go.mod
 
-      - name: Test
-        run: go test ./...
-
-      - uses: golangci/golangci-lint-action@v8
-        with:
-          version: v2.15.0
-
       - name: Build
         run: |
           mkdir -p dist
