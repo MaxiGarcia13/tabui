@@ -6,7 +6,6 @@ on:
 
 permissions:
   contents: write
-  pull-requests: write
 
 jobs:
   ci:
@@ -16,14 +15,102 @@ jobs:
     needs: ci
     runs-on: ubuntu-latest
     outputs:
-      release_created: ${{ steps.release.outputs.release_created }}
-      tag_name: ${{ steps.release.outputs.tag_name }}
+      release_created: ${{ steps.bump.outputs.release_created }}
+      tag_name: ${{ steps.bump.outputs.tag_name }}
     steps:
-      - uses: googleapis/release-please-action@v4
-        id: release
+      - uses: actions/checkout@v4
         with:
-          config-file: version-bump-config.json
-          manifest-file: .version-bump-manifest.json
+          fetch-depth: 0
+
+      - name: Bump version
+        id: bump
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          if git log -1 --pretty=%s | grep -qE '^chore: release v'; then
+            echo "release_created=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          previous=$(git tag --sort=-version:refname | head -n1 || true)
+          current=$(
+            sed -n 's/^const version = "\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)".*/\1/p' \
+              cmd/tabui/main.go
+          )
+          if [ -z "$current" ]; then
+            echo "could not read version from cmd/tabui/main.go" >&2
+            exit 1
+          fi
+
+          if [ -n "$previous" ]; then
+            range="${previous}..HEAD"
+          else
+            range="HEAD"
+          fi
+
+          log=$(git log --pretty=format:'%s' "$range")
+          if [ -z "$log" ]; then
+            echo "release_created=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          bump=none
+          while IFS= read -r msg; do
+            [ -z "$msg" ] && continue
+            if echo "$msg" | grep -qE 'BREAKING CHANGE|^[a-z]+(\([^)]*\))?!:'; then
+              bump=major
+              break
+            fi
+            if echo "$msg" | grep -qE '^feat(\([^)]*\))?!?:'; then
+              if [ "$bump" != major ]; then
+                bump=minor
+              fi
+            elif echo "$msg" | grep -qE '^fix(\([^)]*\))?!?:'; then
+              if [ "$bump" = none ]; then
+                bump=patch
+              fi
+            fi
+          done <<EOF
+          $log
+          EOF
+
+          if [ "$bump" = none ]; then
+            echo "release_created=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          IFS=. read -r major minor patch <<EOF
+          $current
+          EOF
+
+          if [ -z "$previous" ]; then
+            new="$current"
+          else
+            case "$bump" in
+              major) major=$((major + 1)); minor=0; patch=0 ;;
+              minor) minor=$((minor + 1)); patch=0 ;;
+              patch) patch=$((patch + 1)) ;;
+            esac
+            new="${major}.${minor}.${patch}"
+          fi
+
+          tag="v${new}"
+          sed -i "s/^const version = \".*\"/const version = \"${new}\"/" \
+            cmd/tabui/main.go
+
+          git config user.name "github-actions[bot]"
+          git config user.email \
+            "41898282+github-actions[bot]@users.noreply.github.com"
+          git add cmd/tabui/main.go
+          git commit -m "chore: release ${tag} [skip ci]"
+          git tag "$tag"
+          git push origin HEAD:main
+          git push origin "$tag"
+
+          echo "release_created=true" >> "$GITHUB_OUTPUT"
+          echo "tag_name=${tag}" >> "$GITHUB_OUTPUT"
 
   publish:
     needs: version-bump
@@ -31,4 +118,4 @@ jobs:
     uses: ./.github/workflows/publish.yml
     with:
       tag_name: ${{ needs.version-bump.outputs.tag_name }}
-      create_release: false
+      create_release: true

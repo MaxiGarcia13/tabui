@@ -11,7 +11,7 @@ import (
   "github.com/MaxiGarcia13/tabui/internal/ui"
 )
 
-const version = "0.1.0" // x-release-please-version
+const version = "0.1.0"
 
 func main() {
   showVersion := flag.Bool("version", false, "print version and exit")
