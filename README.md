@@ -7,7 +7,7 @@ Press **Tab** in your shell: tabui opens a fuzzy picker with **label** + **detai
 | You are typing | tabui suggests |
 |----------------|----------------|
 | `pnpm ` / `pnpm run ` / `npm run ` | scripts from nearest `package.json`, plus tool commands when relevant |
-| `mv ` / `cp ` / `rm ` / `cd ` | files and folders (paths) — planned |
+| `mv ` / `cp ` / `rm ` / `cd ` | files and folders (paths) |
 
 ## Status
 
@@ -21,7 +21,7 @@ Target: suggest the next token from context (package scripts, paths, flags, …)
 | Generic TUI | Fuzzy list with label + detail | ✅ |
 | CLI wiring | `--line` / `--cwd` / `--cursor` | ✅ |
 | zsh + bash Tab keybinding | `tabui init`; falls back when no match | ✅ |
-| Path provider | Files/folders for `mv` / `cp` / `cd` / `rm` / `cat` / … | ❌ |
+| Path provider | Files/folders for `mv` / `cp` / `cd` / `rm` / `cat` | ✅ |
 | Subcommand / flags provider | Known flags and subcommands for selected tools | ❌ |
 | More CLI providers | Beyond path + package scripts — not every tool on day one | ❌ |
 
@@ -57,7 +57,7 @@ eval "$(tabui init bash)"
 
 3. Open a new shell (or re-source your rc file).
 
-Try in a Node project: `pnpm ` + **Tab** → tool commands and scripts; `pnpm run ` + **Tab** → scripts only.
+Try: `pnpm ` + **Tab** → tool commands and scripts; `mv ` + **Tab** → files and folders.
 
 ### Disable
 
