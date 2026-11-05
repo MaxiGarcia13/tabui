@@ -10,7 +10,6 @@ Go CLI + Charm TUI: given the current shell line and cwd, suggest the **next tok
 
 ## Do not
 
-- Build a terminal emulator or Warp-style overlay
 - Put provider / filesystem / manifest logic in the TUI
 - Put rendering in provider packages
 - Require Node (or other runtimes) to read project files

@@ -2,85 +2,65 @@
 
 A Go CLI + TUI that suggests the **next thing to type** while you compose a shell command — paths, scripts, subcommands, or flags, depending on context.
 
-Works in any terminal (Cursor, VS Code, iTerm, …) as a fuzzy picker with **label** + **detail**. Not a custom terminal overlay.
-
-## How it feels
-
-1. You are building a command (shell keybinding, or invoke the tool with the current line).
-2. tabui reads **context**: current command line + cwd (+ optional project files).
-3. A fuzzy TUI opens with suggestions for **the next argument**.
-4. Each row shows **label** (filename, script name, subcommand) and **detail** (path, script body, description) dimmed on the right.
-5. You pick one → that token is inserted (or the command is completed / run, depending on mode).
+Press **Tab** in your shell: tabui opens a fuzzy picker with **label** + **detail**, you pick a row, and that token is inserted into the line. Works in any terminal. If nothing matches, the shell falls back to normal completion.
 
 | You are typing | tabui suggests |
 |----------------|----------------|
-| `mv ` / `cp ` / `rm ` / `cd ` | files and folders (paths) |
-| `pnpm ` / `pnpm run ` / `npm run ` | scripts from nearest `package.json`, plus tool subcommands when relevant |
-| other known commands | whatever that command needs next (flags, subcommands, paths, …) |
+| `pnpm ` / `pnpm run ` / `npm run ` | scripts from nearest `package.json`, plus tool commands when relevant |
+| `mv ` / `cp ` / `rm ` / `cd ` | files and folders (paths) — planned |
 
-Examples:
+## Status
 
-- `mv ` → files/folders in the current (or relevant) directory
-- `pnpm ` / `npm run ` → package scripts (`dev`, `build`, …) with command body as detail
+### Done
 
-## Architecture
+| Piece | Notes |
+|-------|-------|
+| Package scripts provider | `npm` / `pnpm` / `yarn` / `bun`; nearest `package.json` in Go |
+| Generic TUI | Fuzzy list with label + detail |
+| CLI wiring | `--line` / `--cwd` / `--cursor` |
+| zsh + bash Tab keybinding | Falls back to normal completion when no match |
 
-Provider model — easy to extend without rewriting the TUI:
+### Left to do
 
-- **Path provider** — files/folders for commands that take paths (`mv`, `cp`, `cd`, `rm`, `cat`, …)
-- **Package scripts provider** — `npm run` / `pnpm` / `pnpm run` / `yarn` / `bun run`; nearest `package.json` parsed in Go (no Node at runtime)
-- **Subcommand provider** (later) — known flags/subcommands for selected tools
+| Piece | Notes |
+|-------|-------|
+| Path provider | Files/folders for `mv` / `cp` / `cd` / `rm` / `cat` / … |
+| Subcommand / flags provider | Known flags and subcommands for selected tools |
+| More CLI providers | Beyond path + package scripts — not every tool on day one |
 
-The TUI only renders `label`, `detail`, and the value to insert.
+## Install
 
-Layout (standard Go):
-
-```text
-cmd/tabui/           # binary entry
-internal/<feature>/  # providers, matching, domain types
-internal/ui/         # Charm TUI
-internal/<name>/     # shared helpers only when reused (named packages)
-```
-
-## Integration
-
-Primary target: **shell-friendly**, terminal-agnostic.
-
-While you compose a command, press **Tab** to open the fuzzy TUI of
-next-token suggestions (when a provider matches), pick one, and insert it
-into the line. If tabui has nothing to suggest, zsh falls back to normal
-completion.
-
-Does **not** require a specific terminal app (not Warp-only, not VS Code-extension-only).
-
-### Enable (zsh)
+Requires Go 1.24+.
 
 1. Install the binary onto your `PATH`:
 
 ```bash
-go install ./cmd/tabui
-# or: go build -o tabui ./cmd/tabui && mv tabui "$(go env GOPATH)/bin/"
+go install github.com/MaxiGarcia13/tabui/cmd/tabui@latest
 ```
 
-2. Source the widget from this repo in `~/.zshrc` (adjust the path):
+Or from a clone:
+
+```bash
+go install ./cmd/tabui
+```
+
+2. Source the shell widget (adjust the path if you cloned the repo):
+
+**zsh** — add to `~/.zshrc`:
 
 ```zsh
 source /path/to/tabui/shell/tabui.zsh
 ```
 
-3. Open a new shell (or `source ~/.zshrc`).
-
-Try in a Node project:
-
-- `pnpm ` + **Tab** → tool commands **and** scripts (picking a script
-  inserts `run <name>`, e.g. `pnpm run build`)
-- `pnpm run ` + **Tab** → scripts only
-
-### Enable (bash)
+**bash** — add to `~/.bashrc`:
 
 ```bash
 source /path/to/tabui/shell/tabui.bash
 ```
+
+3. Open a new shell (or re-source your rc file).
+
+Try in a Node project: `pnpm ` + **Tab** → tool commands and scripts; `pnpm run ` + **Tab** → scripts only.
 
 ### Disable
 
@@ -89,56 +69,6 @@ source /path/to/tabui/shell/tabui.bash
 | This session | `bindkey '^I' expand-or-complete` | `bind '"\t": complete'` |
 | Permanent | Remove the `source …/shell/tabui.*` line from your rc file | same |
 
-## Tech
+## Contributing
 
-- Go
-- Charm TUI (Bubble Tea / Lip Gloss)
-- Fuzzy filter
-- JSON parsed in Go for `package.json`
-
-## Development
-
-Requires Go 1.22+ and [golangci-lint](https://golangci-lint.run/) for linting.
-
-Once per clone, point Git at the tracked hooks (runs `golangci-lint` before each commit):
-
-```bash
-git config core.hooksPath .githooks
-```
-
-```bash
-# run unit tests
-go test ./...
-
-# lint (see .golangci.yml)
-golangci-lint run ./...
-
-# build the binary
-go build -o tabui ./cmd/tabui
-
-# print version (const in cmd/tabui/main.go)
-./tabui -version
-
-# install onto PATH
-go install ./cmd/tabui
-```
-
-Try the package-scripts picker (interactive TTY required):
-
-```bash
-go run ./cmd/tabui --line="pnpm run " --cwd=/path/to/node/project
-```
-
-On success, the chosen script name is printed on stdout (for shell insert). Esc / Ctrl+C cancels with no output.
-
-Package-scripts provider tests live next to the code under `internal/package_scripts/` (fixtures in `testdata/`).
-
-## Out of scope (for now)
-
-- Rebuilding a full terminal emulator or Warp’s floating UI chrome
-- Replacing the entire shell
-- Completing every CLI on day one — ship path + package-script providers first
-
-## Success
-
-A Go tool you can bind in your shell so that, depending on what you are typing (`mv`, `pnpm`, `npm run`, …), you get a fast fuzzy TUI of the **right next options** — files/folders, scripts, or commands — with a clear label + detail, in any terminal including Cursor’s.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, tests, and layout.
