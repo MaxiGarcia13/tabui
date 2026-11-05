@@ -1,0 +1,30 @@
+name: Version bump
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  version-bump:
+    runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+    steps:
+      - uses: googleapis/release-please-action@v4
+        id: release
+        with:
+          config-file: version-bump-config.json
+          manifest-file: .version-bump-manifest.json
+
+  publish:
+    needs: version-bump
+    if: ${{ needs.version-bump.outputs.release_created == 'true' }}
+    uses: ./.github/workflows/publish.yml
+    with:
+      tag_name: ${{ needs.version-bump.outputs.tag_name }}
+      create_release: false

@@ -1,0 +1,87 @@
+name: Publish
+
+on:
+  workflow_call:
+    inputs:
+      tag_name:
+        description: Git tag to publish (e.g. v0.1.0)
+        required: true
+        type: string
+      create_release:
+        description: Create the GitHub release; false only uploads assets
+        required: false
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag_name }}
+          fetch-depth: 0
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Test
+        run: go test ./...
+
+      - uses: golangci/golangci-lint-action@v8
+        with:
+          version: v2.5.0
+
+      - name: Build
+        run: |
+          mkdir -p dist
+          version="${{ inputs.tag_name }}"
+          for pair in darwin/amd64 darwin/arm64 linux/amd64 linux/arm64; do
+            goos="${pair%/*}"
+            goarch="${pair#*/}"
+            out="dist/tabui_${version}_${goos}_${goarch}"
+            GOOS="$goos" GOARCH="$goarch" CGO_ENABLED=0 \
+              go build -trimpath -ldflags "-s -w" -o "$out" ./cmd/tabui
+          done
+
+      - name: Release notes
+        if: ${{ inputs.create_release }}
+        env:
+          TAG_NAME: ${{ inputs.tag_name }}
+        run: |
+          previous=$(
+            git tag --sort=-version:refname \
+              | grep -vx "${TAG_NAME}" \
+              | head -n1 || true
+          )
+          {
+            echo "## What's Changed"
+            echo
+            if [ -n "$previous" ]; then
+              git log --pretty=format:'- %s (%h)' "${previous}..${TAG_NAME}"
+            else
+              git log --pretty=format:'- %s (%h)' "${TAG_NAME}"
+            fi
+            echo
+          } > release-notes.md
+
+      - name: Create release
+        if: ${{ inputs.create_release }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG_NAME: ${{ inputs.tag_name }}
+        run: |
+          gh release create "$TAG_NAME" dist/* \
+            --title "$TAG_NAME" \
+            --notes-file release-notes.md
+
+      - name: Upload assets
+        if: ${{ !inputs.create_release }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG_NAME: ${{ inputs.tag_name }}
+        run: gh release upload "$TAG_NAME" dist/* --clobber

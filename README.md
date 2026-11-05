@@ -116,6 +116,9 @@ golangci-lint run ./...
 # build the binary
 go build -o tabui ./cmd/tabui
 
+# print version (const in cmd/tabui/main.go)
+./tabui -version
+
 # install onto PATH
 go install ./cmd/tabui
 ```

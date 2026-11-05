@@ -11,7 +11,10 @@ import (
   "github.com/MaxiGarcia13/tabui/internal/ui"
 )
 
+const version = "0.1.0" // x-release-please-version
+
 func main() {
+  showVersion := flag.Bool("version", false, "print version and exit")
   line := flag.String("line", "", "current command line")
   cursor := flag.Int(
     "cursor",
@@ -20,6 +23,11 @@ func main() {
   )
   cwd := flag.String("cwd", "", "working directory (default: cwd)")
   flag.Parse()
+
+  if *showVersion {
+    fmt.Println(version)
+    return
+  }
 
   workingDir := *cwd
   if workingDir == "" {
