@@ -49,4 +49,4 @@ Go · Bubble Tea / Lip Gloss · fuzzy filter · `encoding/json` for manifests.
 
 ## Working style
 
-Small focused changes. Test match/suggest without the TUI. Skills: `add-provider`, `shell-integration` when adding providers or shell bindings.
+Small focused changes. Test match/suggest without the TUI. Skill: `shell-integration` when editing shell bindings.
