@@ -7,6 +7,7 @@ import (
 
 	"github.com/MaxiGarcia13/tabui/internal/cmdline"
 	"github.com/MaxiGarcia13/tabui/internal/package_scripts"
+	"github.com/MaxiGarcia13/tabui/internal/path"
 	"github.com/MaxiGarcia13/tabui/internal/shellinit"
 	"github.com/MaxiGarcia13/tabui/internal/suggest"
 	"github.com/MaxiGarcia13/tabui/internal/ui"
@@ -63,11 +64,17 @@ func main() {
 		Cwd:    workingDir,
 	}
 
-	if !package_scripts.Match(context) {
-		return
-	}
-
-	suggestions := package_scripts.Suggest(context)
+	suggestions := suggest.FirstMatch(
+		context,
+		suggest.Funcs{
+			MatchFn:   package_scripts.Match,
+			SuggestFn: package_scripts.Suggest,
+		},
+		suggest.Funcs{
+			MatchFn:   path.Match,
+			SuggestFn: path.Suggest,
+		},
+	)
 	if len(suggestions) == 0 {
 		return
 	}
