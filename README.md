@@ -11,22 +11,19 @@ Press **Tab** in your shell: tabui opens a fuzzy picker with **label** + **detai
 
 ## Status
 
-### Done
+Target: suggest the next token from context (package scripts, paths, flags, …) via a Tab fuzzy picker in any terminal.
 
-| Piece | Notes |
-|-------|-------|
-| Package scripts provider | `npm` / `pnpm` / `yarn` / `bun`; nearest `package.json` in Go |
-| Generic TUI | Fuzzy list with label + detail |
-| CLI wiring | `--line` / `--cwd` / `--cursor` |
-| zsh + bash Tab keybinding | Falls back to normal completion when no match |
+**Status:** ✅ ready · 🚧 in progress · ❌ not started
 
-### Left to do
-
-| Piece | Notes |
-|-------|-------|
-| Path provider | Files/folders for `mv` / `cp` / `cd` / `rm` / `cat` / … |
-| Subcommand / flags provider | Known flags and subcommands for selected tools |
-| More CLI providers | Beyond path + package scripts — not every tool on day one |
+| Piece | Notes | Status |
+|-------|-------|--------|
+| Package scripts provider | `npm` / `pnpm` / `yarn` / `bun`; nearest `package.json` in Go | ✅ |
+| Generic TUI | Fuzzy list with label + detail | ✅ |
+| CLI wiring | `--line` / `--cwd` / `--cursor` | ✅ |
+| zsh + bash Tab keybinding | `tabui init`; falls back when no match | ✅ |
+| Path provider | Files/folders for `mv` / `cp` / `cd` / `rm` / `cat` / … | ❌ |
+| Subcommand / flags provider | Known flags and subcommands for selected tools | ❌ |
+| More CLI providers | Beyond path + package scripts — not every tool on day one | ❌ |
 
 ## Install
 
