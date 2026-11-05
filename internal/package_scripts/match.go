@@ -19,8 +19,8 @@ var scriptPrefixes = []string{
 }
 
 func Match(ctx suggest.Context) bool {
-  _, ok := scriptPartial(lineUpToCursor(ctx))
-  return ok
+  _, matched := scriptPartial(lineUpToCursor(ctx))
+  return matched
 }
 
 func lineUpToCursor(ctx suggest.Context) string {
@@ -34,27 +34,27 @@ func lineUpToCursor(ctx suggest.Context) string {
   return line
 }
 
-func scriptPartial(line string) (partial string, ok bool) {
+func scriptPartial(line string) (partial string, matched bool) {
   line = strings.TrimLeft(line, " \t")
   for _, prefix := range scriptPrefixes {
-    if p, matched := queryAfter(line, prefix); matched {
-      return p, true
+    if token, ok := queryAfter(line, prefix); ok {
+      return token, true
     }
   }
   return "", false
 }
 
-func queryAfter(line, prefix string) (partial string, ok bool) {
-  trimmed := strings.TrimRight(prefix, " ")
-  if line == trimmed {
+func queryAfter(line, prefix string) (partial string, matched bool) {
+  prefixWithoutSpace := strings.TrimRight(prefix, " ")
+  if line == prefixWithoutSpace {
     return "", true
   }
   if !strings.HasPrefix(line, prefix) {
     return "", false
   }
-  rest := line[len(prefix):]
-  if strings.ContainsAny(rest, " \t") {
+  scriptToken := line[len(prefix):]
+  if strings.ContainsAny(scriptToken, " \t") {
     return "", false
   }
-  return rest, true
+  return scriptToken, true
 }

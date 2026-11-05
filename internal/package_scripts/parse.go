@@ -11,35 +11,35 @@ type packageJSON struct {
 }
 
 func findNearestPackageJSON(cwd string) (string, error) {
-  dir, err := filepath.Abs(cwd)
+  directory, err := filepath.Abs(cwd)
   if err != nil {
     return "", err
   }
   for {
-    candidate := filepath.Join(dir, "package.json")
-    info, err := os.Stat(candidate)
-    if err == nil && !info.IsDir() {
+    candidate := filepath.Join(directory, "package.json")
+    fileInfo, statErr := os.Stat(candidate)
+    if statErr == nil && !fileInfo.IsDir() {
       return candidate, nil
     }
-    parent := filepath.Dir(dir)
-    if parent == dir {
+    parent := filepath.Dir(directory)
+    if parent == directory {
       return "", os.ErrNotExist
     }
-    dir = parent
+    directory = parent
   }
 }
 
 func readScripts(path string) (map[string]string, error) {
-  data, err := os.ReadFile(path)
+  rawJSON, err := os.ReadFile(path)
   if err != nil {
     return nil, err
   }
-  var pkg packageJSON
-  if err := json.Unmarshal(data, &pkg); err != nil {
+  var manifest packageJSON
+  if err := json.Unmarshal(rawJSON, &manifest); err != nil {
     return nil, err
   }
-  if pkg.Scripts == nil {
+  if manifest.Scripts == nil {
     return map[string]string{}, nil
   }
-  return pkg.Scripts, nil
+  return manifest.Scripts, nil
 }

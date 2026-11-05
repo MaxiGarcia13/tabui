@@ -8,46 +8,46 @@ import (
 )
 
 func Suggest(ctx suggest.Context) []suggest.Suggestion {
-  partial, ok := scriptPartial(lineUpToCursor(ctx))
-  if !ok {
+  partial, matched := scriptPartial(lineUpToCursor(ctx))
+  if !matched {
     return nil
   }
 
-  path, err := findNearestPackageJSON(ctx.Cwd)
+  packageJSONPath, err := findNearestPackageJSON(ctx.Cwd)
   if err != nil {
     return nil
   }
 
-  scripts, err := readScripts(path)
+  scripts, err := readScripts(packageJSONPath)
   if err != nil {
     return nil
   }
 
-  names := make([]string, 0, len(scripts))
-  for name := range scripts {
-    if matchesPartial(name, partial) {
-      names = append(names, name)
+  scriptNames := make([]string, 0, len(scripts))
+  for scriptName := range scripts {
+    if matchesPartial(scriptName, partial) {
+      scriptNames = append(scriptNames, scriptName)
     }
   }
-  sort.Strings(names)
+  sort.Strings(scriptNames)
 
-  out := make([]suggest.Suggestion, 0, len(names))
-  for _, name := range names {
-    out = append(out, suggest.Suggestion{
-      Label:  name,
-      Detail: scripts[name],
-      Value:  name,
+  suggestions := make([]suggest.Suggestion, 0, len(scriptNames))
+  for _, scriptName := range scriptNames {
+    suggestions = append(suggestions, suggest.Suggestion{
+      Label:  scriptName,
+      Detail: scripts[scriptName],
+      Value:  scriptName,
     })
   }
-  return out
+  return suggestions
 }
 
-func matchesPartial(name, partial string) bool {
+func matchesPartial(scriptName, partial string) bool {
   if partial == "" {
     return true
   }
   return strings.HasPrefix(
-    strings.ToLower(name),
+    strings.ToLower(scriptName),
     strings.ToLower(partial),
   )
 }

@@ -32,14 +32,19 @@ func TestMatch(t *testing.T) {
     {name: "leading space", line: "  pnpm run ", want: true},
   }
 
-  for _, tt := range tests {
-    t.Run(tt.name, func(t *testing.T) {
-      got := Match(suggest.Context{
-        Line:   tt.line,
-        Cursor: len(tt.line),
+  for _, testCase := range tests {
+    t.Run(testCase.name, func(t *testing.T) {
+      matched := Match(suggest.Context{
+        Line:   testCase.line,
+        Cursor: len(testCase.line),
       })
-      if got != tt.want {
-        t.Fatalf("Match(%q) = %v, want %v", tt.line, got, tt.want)
+      if matched != testCase.want {
+        t.Fatalf(
+          "Match(%q) = %v, want %v",
+          testCase.line,
+          matched,
+          testCase.want,
+        )
       }
     })
   }
@@ -51,8 +56,8 @@ func TestMatchUsesCursor(t *testing.T) {
   if !Match(ctx) {
     t.Fatal("expected match at cursor inside script token")
   }
-  partial, ok := scriptPartial(lineUpToCursor(ctx))
-  if !ok || partial != "bu" {
-    t.Fatalf("partial = %q, ok = %v", partial, ok)
+  partial, matched := scriptPartial(lineUpToCursor(ctx))
+  if !matched || partial != "bu" {
+    t.Fatalf("partial = %q, matched = %v", partial, matched)
   }
 }
