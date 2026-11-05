@@ -1,0 +1,9 @@
+{
+  "name": "fixture",
+  "scripts": {
+    "build": "tsc -b",
+    "dev": "vite",
+    "test": "vitest run",
+    "lint": "eslint ."
+  }
+}
