@@ -1,0 +1,40 @@
+---
+description: Prefer minimal comments; ban JSDoc; only // for non-obvious intent
+alwaysApply: true
+---
+
+# Minimal comments
+
+Comment only when the code cannot say it clearly. Prefer better names over narration.
+Types and signatures are the documentation — do not duplicate them in comments.
+
+**Never** write:
+- `/** … */` block comments or JSDoc (`@param`, `@returns`, `@example`, etc.)
+- Blocks that restate the function, type, or file name
+- Input → output examples the reader can infer from the body
+- "What this does" prose when the signature and implementation are obvious
+
+**Do** comment (short `//` only):
+- Non-obvious constraints, invariants, or trade-offs
+- Why a surprising approach was chosen (not what the next line does)
+- Cross-cutting intent that would otherwise be missed
+
+```typescript
+// ❌ BAD — JSDoc / block comment
+/**
+ * Map Spanish labels to M/F.
+ * @param value — raw gender string
+ */
+export function normalizeGender(value: string | undefined): 'M' | 'F' | undefined { … }
+
+// ❌ BAD — narrating one-liner
+/** Detect M/F from free-text. */
+export function inferGenderFromText(text: string): 'M' | 'F' | undefined { … }
+
+// ✅ GOOD — no comment when the name and body are enough
+export function normalizeGender(value: string | undefined): 'M' | 'F' | undefined { … }
+
+// ✅ GOOD — non-obvious constraint as //
+// Spaced / unicode dashes separate words; keep hyphen-minus inside ids.
+.replace(/\s*[-–—]\s+/g, ' ')
+```

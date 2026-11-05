@@ -1,0 +1,10 @@
+---
+description: Prefer small components and functions; split large files
+alwaysApply: true
+---
+
+# Small modules
+
+- Keep components and functions small, with a single clear responsibility.
+- Prefer splitting into focused files over growing one large file.
+- Extract helpers, composables, and subcomponents when a unit does more than one job.
