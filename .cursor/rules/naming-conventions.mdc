@@ -5,8 +5,8 @@ alwaysApply: true
 
 # Naming conventions
 
-- **Packages / dirs**: short lowercase (`provider`, `tui`, `cmdline`)
-- **Files**: snake_case Go files (`path_provider.go`, `package_scripts.go`)
+- **Packages / dirs**: short lowercase; multi-word dirs use snake_case (`package_scripts`, not `package-scripts`)
+- **Files**: lowercase; prefer a short single word (`path.go`, `suggest.go`); use snake_case only when multi-word (`package_scripts.go`)
 - **Exported** types, funcs, methods, consts: PascalCase (`PathProvider`, `Suggest`)
 - **Unexported** identifiers: camelCase (`matchPrefix`, `readNearest`)
 - **Names must be descriptive**: prefer clear intent over abbreviations or vague names (`data`, `tmp`, `fn`, `handle`)
@@ -15,10 +15,10 @@ alwaysApply: true
 // ❌ BAD
 const max_retry = 3
 func Get_scripts() {}
-// file: PathProvider.go
+// file: PathProvider.go  or  package-scripts.go
 
 // ✅ GOOD
 const MaxRetry = 3
 func getScripts() {}
-// file: path_provider.go
+// file: scripts.go  or  package_scripts.go
 ```

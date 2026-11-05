@@ -1,0 +1,41 @@
+---
+description: src/domain, src/ui, src/utils layout and feature colocation
+alwaysApply: true
+---
+
+# Project structure
+
+Top-level code lives under `src/`:
+
+| Path | Holds |
+|------|--------|
+| `src/domain/` | Business logic, shared domain types, constants, providers |
+| `src/ui/` | TUI only (Bubble Tea views, styles, list rendering) |
+| `src/utils/` | Helpers reused from **more than one** place |
+
+CLI entry (`main` / `cmd`) stays outside these folders and only wires domain + ui.
+
+## Colocation
+
+Related code that is **not** reused across the project stays in the **same feature folder**. Do not move types or helpers into a global `types/` or `utils/` just because they are types or helpers.
+
+```text
+# ✅ GOOD — feature-local types and helpers
+src/domain/package_scripts/
+  provider.go
+  types.go      # only used here
+  parse.go      # only used here
+
+# ❌ BAD — splitting one feature across global buckets
+src/domain/types/package_scripts.go
+src/utils/parse_package_json.go   # only package_scripts needs it
+```
+
+## When to use `utils`
+
+Promote to `src/utils/` only when a **second** caller needs the same helper (e.g. fuzzy filter used by every provider flow).
+
+## Boundaries
+
+- `src/ui` must not contain provider matching or `package.json` / filesystem business logic.
+- `src/domain` must not render the TUI; it returns suggestions (`label`, `detail`, `value`).

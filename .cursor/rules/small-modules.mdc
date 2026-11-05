@@ -1,5 +1,5 @@
 ---
-description: Prefer small packages and functions; keep providers separate from TUI
+description: Prefer small packages and functions; split large files
 alwaysApply: true
 ---
 
@@ -7,5 +7,5 @@ alwaysApply: true
 
 - Keep packages and functions small, with a single clear responsibility.
 - Prefer splitting into focused files over growing one large file.
-- Keep **providers** (match context → suggestions) separate from the **TUI** (render label/detail/value) and the **CLI entry**.
-- Extract helpers when a unit does more than one job (parse cmdline, walk dirs, read `package.json`, fuzzy filter).
+- Follow [project-structure](project-structure.mdc): feature folders under `src/domain`, TUI in `src/ui`, shared helpers in `src/utils`.
+- Extract a helper into its own file in the **same** feature folder first; move to `src/utils` only when reused.
