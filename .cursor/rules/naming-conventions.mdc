@@ -1,27 +1,24 @@
 ---
-description: File and identifier naming conventions
+description: Go file and identifier naming conventions
 alwaysApply: true
 ---
 
 # Naming conventions
 
-- **Files and folders**: kebab-case (`hello-world.vue`, `user-profile.ts`)
-- **Functions and local/const variables**: camelCase (`getUserById`, `isLoading`)
-- **Global constants**: UPPER_SNAKE_CASE (`API_BASE_URL`, `MAX_RETRY_COUNT`)
-- **Names must be descriptive**: prefer clear intent over abbreviations or vague names (`data`, `temp`, `handle`, `fn`)
+- **Packages / dirs**: short lowercase (`provider`, `tui`, `cmdline`)
+- **Files**: snake_case Go files (`path_provider.go`, `package_scripts.go`)
+- **Exported** types, funcs, methods, consts: PascalCase (`PathProvider`, `Suggest`)
+- **Unexported** identifiers: camelCase (`matchPrefix`, `readNearest`)
+- **Names must be descriptive**: prefer clear intent over abbreviations or vague names (`data`, `tmp`, `fn`, `handle`)
 
-```typescript
+```go
 // ❌ BAD
-const MaxRetryCount = 3;
-const d = fetch();
-function Get_User() {}
-function doStuff(x) {}
-// file: HelloWorld.vue
+const max_retry = 3
+func Get_scripts() {}
+// file: PathProvider.go
 
 // ✅ GOOD
-const MAX_RETRY_COUNT = 3;
-const userProfile = fetch();
-function getUser() {}
-function calculateOrderTotal(order) {}
-// file: hello-world.vue
+const MaxRetry = 3
+func getScripts() {}
+// file: path_provider.go
 ```

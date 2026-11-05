@@ -1,0 +1,27 @@
+---
+description: English for all code and TUI copy
+alwaysApply: true
+---
+
+# Language conventions
+
+Write **English** for everything in this repo — code and user-visible TUI text.
+
+**English** (always):
+- File and package names
+- Functions, variables, constants, types
+- Comments and docs in code
+- Errors, logs, and CLI messages
+- TUI labels, details, empty states, and prompts
+
+```go
+// ❌ BAD — non-English in code or TUI
+return fmt.Errorf("no se pudo leer package.json")
+suggestion.Label = "compilar"
+
+// ✅ GOOD — English everywhere
+return fmt.Errorf("failed to read package.json")
+suggestion.Label = "build"
+```
+
+Do not localize the TUI. This tool targets a terminal-agnostic English CLI experience.

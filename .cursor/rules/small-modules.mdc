@@ -1,10 +1,11 @@
 ---
-description: Prefer small components and functions; split large files
+description: Prefer small packages and functions; keep providers separate from TUI
 alwaysApply: true
 ---
 
 # Small modules
 
-- Keep components and functions small, with a single clear responsibility.
+- Keep packages and functions small, with a single clear responsibility.
 - Prefer splitting into focused files over growing one large file.
-- Extract helpers, composables, and subcomponents when a unit does more than one job.
+- Keep **providers** (match context → suggestions) separate from the **TUI** (render label/detail/value) and the **CLI entry**.
+- Extract helpers when a unit does more than one job (parse cmdline, walk dirs, read `package.json`, fuzzy filter).
