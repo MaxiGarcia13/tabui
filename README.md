@@ -4,6 +4,8 @@ A Go CLI + TUI that suggests the **next thing to type** while you compose a shel
 
 Press **Tab** in your shell: tabui opens a fuzzy picker with **label** + **detail**, you pick a row, and that token is inserted into the line. Works on any OS with a supported Go toolchain, and in any terminal. Shell integration ships for zsh and bash (`tabui init`); if nothing matches, the shell falls back to normal completion.
 
+![tabui demo](docs/demo.gif)
+
 | You are typing | tabui suggests |
 |----------------|----------------|
 | `pnpm run ` / `npm run ` | scripts from nearest `package.json` |
