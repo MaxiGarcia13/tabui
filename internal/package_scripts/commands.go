@@ -1,17 +1,17 @@
 package package_scripts
 
 var packageTools = map[string]struct{}{
-	"npm":  {},
-	"pnpm": {},
-	"yarn": {},
-	"bun":  {},
+  "npm":  {},
+  "pnpm": {},
+  "yarn": {},
+  "bun":  {},
 }
 
 func isPackageTool(command string) bool {
-	_, ok := packageTools[command]
-	return ok
+  _, ok := packageTools[command]
+  return ok
 }
 
 func isRunSubcommand(word string) bool {
-	return word == "run" || word == "run-script"
+  return word == "run" || word == "run-script"
 }

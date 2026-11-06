@@ -1,9 +1,9 @@
 package ui
 
 import (
-  "strings"
+	"strings"
 
-  "github.com/MaxiGarcia13/tabui/internal/suggest"
+	"github.com/MaxiGarcia13/tabui/internal/suggest"
 )
 
 func filterSuggestions(

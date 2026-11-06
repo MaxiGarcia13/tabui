@@ -12,6 +12,10 @@ const (
   pickerFooterLines   = 1
 )
 
+type loadedMsg struct {
+  items []suggest.Suggestion
+}
+
 type pickerState struct {
   allItems   []suggest.Suggestion
   filtered   []suggest.Suggestion
@@ -22,6 +26,8 @@ type pickerState struct {
   chosen     string
   canceled   bool
   linePrefix string
+  loading    bool
+  loadFn     func() []suggest.Suggestion
 }
 
 func newPickerState(
@@ -37,8 +43,37 @@ func newPickerState(
   }
 }
 
+func newLoadingPickerState(
+  linePrefix string,
+  load func() []suggest.Suggestion,
+) pickerState {
+  return pickerState{
+    linePrefix: linePrefix,
+    height:     defaultPickerHeight,
+    loading:    true,
+    loadFn:     load,
+  }
+}
+
 func (state pickerState) Init() tea.Cmd {
-  return nil
+  if !state.loading || state.loadFn == nil {
+    return nil
+  }
+  loadFn := state.loadFn
+  return func() tea.Msg {
+    return loadedMsg{items: loadFn()}
+  }
+}
+
+func (state *pickerState) applyLoaded(items []suggest.Suggestion) {
+  state.loading = false
+  state.loadFn = nil
+  if len(items) == 0 {
+    state.canceled = true
+    return
+  }
+  state.allItems = items
+  state.refilter()
 }
 
 func (state *pickerState) refilter() {

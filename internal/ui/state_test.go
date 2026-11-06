@@ -1,7 +1,10 @@
 package ui
 
 import (
+  "strings"
   "testing"
+
+  tea "github.com/charmbracelet/bubbletea"
 
   "github.com/MaxiGarcia13/tabui/internal/suggest"
 )
@@ -27,5 +30,87 @@ func TestEnsureCursorVisibleScrollsWindow(t *testing.T) {
   state.ensureCursorVisible()
   if state.offset != 2 {
     t.Fatalf("offset = %d, want 2", state.offset)
+  }
+}
+
+func TestLoadingInitReturnsCmd(t *testing.T) {
+  state := newLoadingPickerState("docker ", func() []suggest.Suggestion {
+    return []suggest.Suggestion{{Label: "run", Value: "run"}}
+  })
+  if !state.loading {
+    t.Fatal("expected loading")
+  }
+  if state.Init() == nil {
+    t.Fatal("expected load cmd")
+  }
+}
+
+func TestLoadedMsgFillsList(t *testing.T) {
+  state := newLoadingPickerState("docker ", nil)
+  next, cmd := state.Update(loadedMsg{
+    items: []suggest.Suggestion{
+      {Label: "run", Value: "run", Detail: "Create a container"},
+    },
+  })
+  result := next.(pickerState)
+  if cmd != nil {
+    t.Fatal("expected no quit cmd")
+  }
+  if result.loading {
+    t.Fatal("expected loading false")
+  }
+  if len(result.filtered) != 1 || result.filtered[0].Value != "run" {
+    t.Fatalf("filtered = %+v", result.filtered)
+  }
+  view := result.View()
+  if strings.Contains(view, "loading…") {
+    t.Fatalf("view still loading: %q", view)
+  }
+  if !strings.Contains(view, "run") {
+    t.Fatalf("view missing run: %q", view)
+  }
+}
+
+func TestLoadedMsgEmptyCancels(t *testing.T) {
+  state := newLoadingPickerState("docker ", nil)
+  next, cmd := state.Update(loadedMsg{})
+  result := next.(pickerState)
+  if !result.canceled {
+    t.Fatal("expected canceled")
+  }
+  if cmd == nil {
+    t.Fatal("expected quit cmd")
+  }
+}
+
+func TestLoadingEscCancels(t *testing.T) {
+  state := newLoadingPickerState("docker ", nil)
+  next, cmd := state.Update(tea.KeyMsg{Type: tea.KeyEsc})
+  result := next.(pickerState)
+  if !result.canceled {
+    t.Fatal("expected canceled")
+  }
+  if cmd == nil {
+    t.Fatal("expected quit cmd")
+  }
+}
+
+func TestLoadingIgnoresTyping(t *testing.T) {
+  state := newLoadingPickerState("docker ", nil)
+  next, _ := state.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("r")})
+  result := next.(pickerState)
+  if result.query != "" {
+    t.Fatalf("query = %q, want empty while loading", result.query)
+  }
+  if !result.loading {
+    t.Fatal("expected still loading")
+  }
+}
+
+func TestLoadingViewShowsStatus(t *testing.T) {
+  state := newLoadingPickerState("docker ", nil)
+  view := state.View()
+  if !strings.Contains(view, "loading…") {
+    t.Fatalf("view = %q", view)
   }
 }

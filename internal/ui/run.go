@@ -18,8 +18,22 @@ func Run(
   if len(items) == 0 {
     return "", nil
   }
+  return runPicker(newPickerState(items, linePrefix))
+}
 
-  state := newPickerState(items, linePrefix)
+// RunLoading opens the picker with a loading state, runs load in a Bubble Tea
+// Cmd, then fills the list. Empty load results cancel (shell fallback).
+func RunLoading(
+  linePrefix string,
+  load func() []suggest.Suggestion,
+) (string, error) {
+  if load == nil {
+    return "", nil
+  }
+  return runPicker(newLoadingPickerState(linePrefix, load))
+}
+
+func runPicker(state pickerState) (string, error) {
   programOptions := []tea.ProgramOption{
     tea.WithAltScreen(),
     tea.WithOutput(os.Stderr),

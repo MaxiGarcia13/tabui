@@ -6,12 +6,26 @@ func (state pickerState) Update(
   message tea.Msg,
 ) (tea.Model, tea.Cmd) {
   switch message := message.(type) {
+  case loadedMsg:
+    state.applyLoaded(message.items)
+    if state.canceled {
+      return state, tea.Quit
+    }
+    return state, nil
   case tea.WindowSizeMsg:
     if message.Height > 0 {
       state.height = message.Height
     }
     state.ensureCursorVisible()
   case tea.KeyMsg:
+    if state.loading {
+      switch message.Type {
+      case tea.KeyCtrlC, tea.KeyEsc:
+        state.canceled = true
+        return state, tea.Quit
+      }
+      return state, nil
+    }
     switch message.Type {
     case tea.KeyCtrlC, tea.KeyEsc:
       state.canceled = true

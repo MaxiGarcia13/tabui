@@ -1,17 +1,17 @@
 package ui
 
 import (
-  "fmt"
-  "strings"
+	"fmt"
+	"strings"
 
-  "github.com/MaxiGarcia13/tabui/internal/cmdline"
+	"github.com/MaxiGarcia13/tabui/internal/cmdline"
 )
 
 func (state pickerState) View() string {
   var view strings.Builder
 
   preview := state.linePrefix
-  if len(state.filtered) > 0 {
+  if !state.loading && len(state.filtered) > 0 {
     preview = cmdline.InsertToken(
       state.linePrefix,
       state.filtered[state.cursor].Value,
@@ -21,6 +21,12 @@ func (state pickerState) View() string {
   view.WriteString("\n")
   view.WriteString(queryStyle.Render("filter: " + state.query))
   view.WriteString("\n")
+
+  if state.loading {
+    view.WriteString(detailStyle.Render("loading…"))
+    view.WriteString("\n")
+    return view.String()
+  }
 
   if len(state.filtered) == 0 {
     view.WriteString(detailStyle.Render("no matches"))

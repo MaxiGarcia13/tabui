@@ -1,0 +1,24 @@
+Usage:  docker [OPTIONS] COMMAND
+
+A self-sufficient runtime for containers
+
+Common Commands:
+  run         Create and run a new container from an image
+  exec        Execute a command in a running container
+  ps          List containers
+  build       Build an image from a Dockerfile
+  pull        Download an image from a registry
+  push        Upload an image to a registry
+
+Management Commands:
+  compose     Docker Compose
+  image       Manage images
+  network     Manage networks
+
+Options:
+      --config string      Location of client config files
+  -c, --context string     Name of the context to use
+  -D, --debug              Enable debug mode
+  -H, --host list          Daemon socket to connect to
+      --help               Print usage
+  -v, --version            Print version information
