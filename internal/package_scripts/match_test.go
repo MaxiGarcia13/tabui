@@ -54,36 +54,78 @@ func TestMatch(t *testing.T) {
   }
 }
 
+func TestToolLevel(t *testing.T) {
+  tests := []struct {
+    name string
+    line string
+    want bool
+  }{
+    {name: "npm alone", line: "npm", want: true},
+    {name: "npm space", line: "npm ", want: true},
+    {name: "npm partial", line: "npm in", want: true},
+    {name: "npm install", line: "npm install", want: true},
+    {name: "npm install space", line: "npm install ", want: false},
+    {name: "npm run", line: "npm run ", want: false},
+    {name: "pnpm bare", line: "pnpm ", want: true},
+    {name: "pnpm partial", line: "pnpm ad", want: true},
+    {name: "yarn bare", line: "yarn ", want: true},
+    {name: "bun bare", line: "bun ", want: true},
+    {name: "mv", line: "mv ", want: false},
+  }
+
+  for _, testCase := range tests {
+    t.Run(testCase.name, func(t *testing.T) {
+      matched := ToolLevel(suggest.Context{
+        Line:   testCase.line,
+        Cursor: len(testCase.line),
+      })
+      if matched != testCase.want {
+        t.Fatalf(
+          "ToolLevel(%q) = %v, want %v",
+          testCase.line,
+          matched,
+          testCase.want,
+        )
+      }
+    })
+  }
+}
+
 func TestParseCompletionScripts(t *testing.T) {
   tests := []struct {
-    name        string
-    line        string
-    wantOK      bool
-    wantPartial string
+    name         string
+    line         string
+    wantOK       bool
+    wantPartial  string
+    wantNeedsRun bool
   }{
     {
-      name:        "tool level falls through",
-      line:        "npm ",
-      wantOK:      false,
-      wantPartial: "",
+      name:         "tool level scripts",
+      line:         "npm ",
+      wantOK:       true,
+      wantPartial:  "",
+      wantNeedsRun: true,
     },
     {
-      name:        "tool partial falls through",
-      line:        "pnpm in",
-      wantOK:      false,
-      wantPartial: "",
+      name:         "tool partial scripts",
+      line:         "pnpm in",
+      wantOK:       true,
+      wantPartial:  "in",
+      wantNeedsRun: true,
     },
     {
-      name:        "scripts after run",
-      line:        "npm run ",
-      wantOK:      true,
-      wantPartial: "",
+      name:         "scripts after run",
+      line:         "npm run ",
+      wantOK:       true,
+      wantPartial:  "",
+      wantNeedsRun: false,
     },
     {
-      name:        "script partial",
-      line:        "npm run bu",
-      wantOK:      true,
-      wantPartial: "bu",
+      name:         "script partial",
+      line:         "npm run bu",
+      wantOK:       true,
+      wantPartial:  "bu",
+      wantNeedsRun: false,
     },
   }
 
@@ -98,6 +140,13 @@ func TestParseCompletionScripts(t *testing.T) {
           "partial = %q, want %q",
           current.partial,
           testCase.wantPartial,
+        )
+      }
+      if current.needsRun != testCase.wantNeedsRun {
+        t.Fatalf(
+          "needsRun = %v, want %v",
+          current.needsRun,
+          testCase.wantNeedsRun,
         )
       }
     })

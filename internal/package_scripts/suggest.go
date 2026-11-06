@@ -12,12 +12,13 @@ func Suggest(ctx suggest.Context) []suggest.Suggestion {
   if !current.ok {
     return nil
   }
-  return suggestScripts(ctx.Cwd, current.partial)
+  return suggestScripts(ctx.Cwd, current.partial, current.needsRun)
 }
 
 func suggestScripts(
   workingDir string,
   partial string,
+  needsRun bool,
 ) []suggest.Suggestion {
   packageJSONPath, err := findNearestPackageJSON(workingDir)
   if err != nil {
@@ -39,10 +40,14 @@ func suggestScripts(
 
   suggestions := make([]suggest.Suggestion, 0, len(scriptNames))
   for _, scriptName := range scriptNames {
+    value := scriptName
+    if needsRun {
+      value = "run " + scriptName
+    }
     suggestions = append(suggestions, suggest.Suggestion{
       Label:  scriptName,
       Detail: scripts[scriptName],
-      Value:  scriptName,
+      Value:  value,
     })
   }
   return suggestions

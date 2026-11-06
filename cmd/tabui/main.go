@@ -71,35 +71,17 @@ func main() {
     linePrefix = linePrefix[:cursorOffset]
   }
 
-  suggestions := suggest.FirstMatch(
-    context,
-    suggest.Funcs{
-      MatchFn:   package_scripts.Match,
-      SuggestFn: package_scripts.Suggest,
-    },
-    suggest.Funcs{
-      MatchFn:   path.Match,
-      SuggestFn: path.Suggest,
-    },
-  )
-
   var (
     selected string
     err      error
   )
   switch {
-  case len(suggestions) > 0:
-    selected, err = ui.Run(suggestions, linePrefix)
+  case package_scripts.Match(context):
+    selected, err = ui.Run(package_scripts.Suggest(context), linePrefix)
+  case path.Match(context):
+    selected, err = ui.Run(path.Suggest(context), linePrefix)
   default:
-    items, matched, load := clihelp.Lookup(context)
-    if !matched {
-      return
-    }
-    if load == nil {
-      selected, err = ui.Run(items, linePrefix)
-    } else {
-      selected, err = ui.RunLoading(linePrefix, load)
-    }
+    selected, err = runHelpOrToolLevel(context, linePrefix)
   }
   if errors.Is(err, ui.ErrCanceled) {
     os.Exit(2)
@@ -114,4 +96,40 @@ func main() {
 
   // Print the new left-of-cursor line so the shell shows e.g. "pnpm run build".
   fmt.Print(cmdline.InsertToken(linePrefix, selected))
+}
+
+func runHelpOrToolLevel(
+  context suggest.Context,
+  linePrefix string,
+) (string, error) {
+  var scripts []suggest.Suggestion
+  if package_scripts.ToolLevel(context) {
+    scripts = package_scripts.Suggest(context)
+  }
+
+  items, matched, load := clihelp.Lookup(context)
+  if !matched {
+    return ui.Run(scripts, linePrefix)
+  }
+  if load == nil {
+    return ui.Run(mergeSuggestions(scripts, items), linePrefix)
+  }
+  return ui.RunLoading(linePrefix, func() []suggest.Suggestion {
+    return mergeSuggestions(scripts, load())
+  })
+}
+
+func mergeSuggestions(
+  head, tail []suggest.Suggestion,
+) []suggest.Suggestion {
+  if len(head) == 0 {
+    return tail
+  }
+  if len(tail) == 0 {
+    return head
+  }
+  merged := make([]suggest.Suggestion, 0, len(head)+len(tail))
+  merged = append(merged, head...)
+  merged = append(merged, tail...)
+  return merged
 }

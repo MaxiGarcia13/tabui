@@ -7,7 +7,41 @@ import (
   "github.com/MaxiGarcia13/tabui/internal/suggest"
 )
 
-func TestSuggestToolLevelFallsThrough(t *testing.T) {
+func TestSuggestToolLevelScripts(t *testing.T) {
+  workingDir := filepath.Join("testdata", "project")
+  suggestions := Suggest(suggest.Context{
+    Line:   "npm ",
+    Cursor: len("npm "),
+    Cwd:    workingDir,
+  })
+  if len(suggestions) != 4 {
+    t.Fatalf("len = %d, want 4: %+v", len(suggestions), suggestions)
+  }
+  first := suggestions[0]
+  if first.Label != "build" || first.Detail != "tsc -b" {
+    t.Fatalf("first = %+v", first)
+  }
+  if first.Value != "run build" {
+    t.Fatalf("value = %q, want %q", first.Value, "run build")
+  }
+}
+
+func TestSuggestToolLevelPartial(t *testing.T) {
+  workingDir := filepath.Join("testdata", "project")
+  suggestions := Suggest(suggest.Context{
+    Line:   "pnpm te",
+    Cursor: len("pnpm te"),
+    Cwd:    workingDir,
+  })
+  if len(suggestions) != 1 || suggestions[0].Label != "test" {
+    t.Fatalf("got %+v", suggestions)
+  }
+  if suggestions[0].Value != "run test" {
+    t.Fatalf("value = %q", suggestions[0].Value)
+  }
+}
+
+func TestSuggestToolLevelFallsThroughWithoutPackageJSON(t *testing.T) {
   suggestions := Suggest(suggest.Context{
     Line:   "npm ",
     Cursor: len("npm "),

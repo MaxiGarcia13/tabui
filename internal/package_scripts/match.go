@@ -7,13 +7,21 @@ import (
 )
 
 type completion struct {
-  ok      bool
-  tool    string
-  partial string
+  ok       bool
+  tool     string
+  partial  string
+  needsRun bool
 }
 
 func Match(ctx suggest.Context) bool {
-  return parseCompletion(lineUpToCursor(ctx)).ok
+  current := parseCompletion(lineUpToCursor(ctx))
+  return current.ok && !current.needsRun
+}
+
+// ToolLevel covers bare package-tool slots merged with clihelp in main.
+func ToolLevel(ctx suggest.Context) bool {
+  current := parseCompletion(lineUpToCursor(ctx))
+  return current.ok && current.needsRun
 }
 
 func lineUpToCursor(ctx suggest.Context) string {
@@ -45,32 +53,46 @@ func parseCompletion(line string) completion {
     return completion{}
   }
 
-  // Only script slots: `<tool> run` / `run-script` [partial].
-  // Bare tool-level tokens fall through to clihelp.
+  // Tool-level: `<tool>` / `<tool> ` / `<tool> partial`
+  // Selecting a script inserts `run <script>`.
   if len(words) == 1 {
-    return completion{}
-  }
-
-  if !isRunSubcommand(words[1]) {
-    return completion{}
-  }
-
-  switch {
-  case len(words) == 2:
     return completion{
-      ok:      true,
-      tool:    tool,
-      partial: "",
+      ok:       true,
+      tool:     tool,
+      partial:  "",
+      needsRun: true,
     }
-
-  case len(words) == 3 && !trailingSpace:
-    return completion{
-      ok:      true,
-      tool:    tool,
-      partial: words[2],
-    }
-
-  default:
-    return completion{}
   }
+
+  if isRunSubcommand(words[1]) {
+    switch {
+    case len(words) == 2:
+      return completion{
+        ok:      true,
+        tool:    tool,
+        partial: "",
+      }
+
+    case len(words) == 3 && !trailingSpace:
+      return completion{
+        ok:      true,
+        tool:    tool,
+        partial: words[2],
+      }
+
+    default:
+      return completion{}
+    }
+  }
+
+  if len(words) == 2 && !trailingSpace {
+    return completion{
+      ok:       true,
+      tool:     tool,
+      partial:  words[1],
+      needsRun: true,
+    }
+  }
+
+  return completion{}
 }
