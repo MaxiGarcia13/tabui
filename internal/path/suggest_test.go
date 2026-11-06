@@ -177,6 +177,9 @@ func TestSuggestHome(t *testing.T) {
   if suggestions[0].Value != "~/notes.txt" {
     t.Fatalf("value = %q", suggestions[0].Value)
   }
+  if suggestions[0].Detail != "" {
+    t.Fatalf("home detail should be empty, got %q", suggestions[0].Detail)
+  }
 }
 
 func TestSplitPartial(t *testing.T) {

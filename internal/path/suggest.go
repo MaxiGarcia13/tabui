@@ -92,7 +92,7 @@ func suggestPaths(
       label += "/"
     }
     value := dirPart + label
-    detail := detailFor(absCwd, listDir, name, isDir, value)
+    detail := detailFor(absCwd, listDir, name, isDir)
     if detail == label {
       detail = ""
     }
@@ -134,12 +134,11 @@ func detailFor(
   listDir string,
   name string,
   isDir bool,
-  fallback string,
 ) string {
   full := filepath.Join(listDir, name)
   rel, err := filepath.Rel(absCwd, full)
   if err != nil || strings.HasPrefix(rel, "..") {
-    return fallback
+    return ""
   }
   detail := filepath.ToSlash(rel)
   if isDir {
