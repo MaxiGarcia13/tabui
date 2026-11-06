@@ -2,18 +2,20 @@
 
 Go CLI + Charm TUI: given the current shell line and cwd, suggest the **next token** in a fuzzy list (`Label`, `Detail`, `Value`). Shell keybinding is the main integration; any terminal.
 
-## v1
+## Layers
 
-- Path provider for path-taking commands (`mv`, `cp`, `cd`, `rm`, `cat`, …)
-- Package scripts provider for `npm` / `pnpm` / `yarn` / `bun` run-style prefixes; parse nearest `package.json` in Go (no Node)
-- Generic TUI + CLI wiring + zsh/bash keybinding
+1. **Package scripts** — `npm` / `pnpm` / `yarn` / `bun` **run** / `run-script` slots; nearest `package.json` in Go (no Node)
+2. **Path** — path-taking commands (`mv`, `cp`, `cd`, `rm`, `cat`, …) plus curated flags
+3. **CLI help** — any other `LookPath` command: `cmd [sub…] --help`, sanitize/parse subcommands + flags, optional SQLite cache; async load in the TUI on cache miss
+
+Specialized layers win first; help is the fallback. Builtins / tools without useful `--help` stay on curated path flags.
 
 ## Do not
 
-- Put provider / filesystem / manifest logic in the TUI
+- Put provider / filesystem / manifest / help-exec logic in the TUI
 - Put rendering in provider packages
 - Require Node (or other runtimes) to read project files
-- Aim to complete every CLI in v1
+- Aim to complete every CLI dialect of `--help` on day one
 
 ## Layout
 
@@ -21,6 +23,7 @@ Go CLI + Charm TUI: given the current shell line and cwd, suggest the **next tok
 cmd/tabui/              # main — wire only
 internal/path/          # path provider
 internal/package_scripts/
+internal/clihelp/       # generic --help fallback + cache
 internal/shellinit/     # embedded zsh / bash widgets (`tabui init`)
 internal/ui/            # Bubble Tea / Lip Gloss only
 internal/fuzzy/         # example shared helper — only if 2+ callers
@@ -41,11 +44,11 @@ Under `internal/<feature>/`:
 | `Detail` | Secondary (path, script body, description) |
 | `Value` | Token inserted into the line |
 
-TUI stays generic: only render and return the chosen `Value`.
+TUI stays generic: only render and return the chosen `Value` (sync `Run` or `RunLoading`).
 
 ## Stack
 
-Go · Bubble Tea / Lip Gloss · fuzzy filter · `encoding/json` for manifests.
+Go · Bubble Tea / Lip Gloss · fuzzy filter · `encoding/json` for manifests · optional SQLite (`modernc.org/sqlite`) for help cache.
 
 ## Working style
 

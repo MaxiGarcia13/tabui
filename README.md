@@ -6,8 +6,32 @@ Press **Tab** in your shell: tabui opens a fuzzy picker with **label** + **detai
 
 | You are typing | tabui suggests |
 |----------------|----------------|
-| `pnpm ` / `pnpm run ` / `npm run ` | scripts from nearest `package.json`, plus tool commands when relevant |
-| `mv ` / `cp ` / `rm ` / `cd ` | files and folders (paths) |
+| `pnpm run ` / `npm run ` | scripts from nearest `package.json` |
+| `mv ` / `cp ` / `rm ` / `cd ` | files and folders (paths); curated flags when the token starts with `-` |
+| `docker ` / `git ` / `npm ` / `brew ` / … | subcommands and flags from `cmd [sub…] --help` (cached) |
+
+## Provider order
+
+Specialized providers run first; CLI help is the fallback for anything else on your `PATH`.
+
+```mermaid
+flowchart TD
+  tab[Tab invokes tabui] --> scripts[package_scripts script slots only]
+  scripts -->|match| syncUI[ui.Run sync]
+  scripts -->|no| pathProv[path cd/rm/mv/cp/cat]
+  pathProv -->|match| syncUI
+  pathProv -->|no| helpMatch{clihelp LookPath command?}
+  helpMatch -->|no| exit[exit empty shell fallback]
+  helpMatch -->|cache hit| syncUI
+  helpMatch -->|cache miss| asyncUI[ui.RunLoading]
+  asyncUI --> fetch[exec --help]
+  fetch --> sanitize[sanitize and parse]
+  sanitize --> persist{SQLite available?}
+  persist -->|yes| cacheWrite[upsert rows]
+  persist -->|no| skipPersist[skip persist still serve results]
+  cacheWrite --> fill[fill picker]
+  skipPersist --> fill
+```
 
 ## Status
 
@@ -17,17 +41,17 @@ Target: suggest the next token from context (package scripts, paths, flags, …)
 
 | Piece | Notes | Status |
 |-------|-------|--------|
-| Package scripts provider | `npm` / `pnpm` / `yarn` / `bun`; nearest `package.json` in Go | ✅ |
-| Generic TUI | Fuzzy list with label + detail | ✅ |
+| Package scripts provider | `npm` / `pnpm` / `yarn` / `bun` **run** slots; nearest `package.json` in Go | ✅ |
+| Generic TUI | Fuzzy list with label + detail; `RunLoading` for async help | ✅ |
 | CLI wiring | `--line` / `--cwd` / `--cursor` | ✅ |
 | zsh + bash Tab keybinding | `tabui init`; falls back when no match | ✅ |
-| Path provider | Files/folders for `mv` / `cp` / `cd` / `rm` / `cat` | ✅ |
-| Subcommand / flags provider | Known flags and subcommands for selected tools | ❌ |
-| More CLI providers | Beyond path + package scripts — not every tool on day one | ❌ |
+| Path provider | Files/folders for `mv` / `cp` / `cd` / `rm` / `cat`; curated flags when the token starts with `-` | ✅ |
+| CLI help fallback | Any other LookPath command (`docker`, `git`, `brew`, npm-family tool-level, …): `--help` on demand, sanitize/parse subcommands + flags, SQLite cache when available; picker shows `loading…` on cache miss | ✅ |
+| More specialized providers | Extra Match → Suggest packs where help-scrape is a poor fit | ❌ |
 
 ## Install
 
-Requires Go 1.24+.
+Requires Go 1.26+.
 
 1. Install the binary onto your `PATH`:
 
@@ -57,7 +81,7 @@ eval "$(tabui init bash)"
 
 3. Open a new shell (or re-source your rc file).
 
-Try: `pnpm ` + **Tab** → tool commands and scripts; `mv ` + **Tab** → files and folders.
+Try: `pnpm run ` + **Tab** → scripts; `mv ` + **Tab** → paths; `docker ` + **Tab** → subcommands from help; `cd -` + **Tab** → flags.
 
 ### Disable
 

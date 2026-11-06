@@ -2,7 +2,7 @@
 
 ## Setup
 
-Requires Go 1.24+ and [golangci-lint](https://golangci-lint.run/) for linting.
+Requires Go 1.26+ and [golangci-lint](https://golangci-lint.run/) for linting.
 
 Once per clone, point Git at the tracked hooks (runs `golangci-lint` before each commit):
 
@@ -29,21 +29,23 @@ go build -o tabui ./cmd/tabui
 go install ./cmd/tabui
 ```
 
-Try the package-scripts picker (interactive TTY required):
+Try the pickers (interactive TTY required):
 
 ```bash
 go run ./cmd/tabui --line="pnpm run " --cwd=/path/to/node/project
+go run ./cmd/tabui --line="docker "
 ```
 
 On success, the chosen value is printed on stdout (for shell insert). Esc / Ctrl+C cancels with no output.
 
-Provider tests live next to the code (e.g. `internal/package_scripts/`, fixtures in `testdata/`).
+Provider tests live next to the code (e.g. `internal/package_scripts/`, `internal/clihelp/`, fixtures in `testdata/`).
 
 ## Layout
 
 ```text
 cmd/tabui/              # binary entry — wire only
 internal/<feature>/     # providers, matching, domain types
+internal/clihelp/       # generic --help fallback + cache
 internal/ui/            # Charm TUI (Bubble Tea / Lip Gloss)
 internal/shellinit/     # embedded zsh / bash widgets (`tabui init`)
 internal/<name>/        # shared helpers only when reused (named packages)
