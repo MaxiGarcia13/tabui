@@ -8,7 +8,7 @@ func (state pickerState) Update(
   switch message := message.(type) {
   case loadedMsg:
     state.applyLoaded(message.items)
-    if state.canceled {
+    if len(state.allItems) == 0 {
       return state, tea.Quit
     }
     return state, nil

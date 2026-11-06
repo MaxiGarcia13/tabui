@@ -69,7 +69,6 @@ func (state *pickerState) applyLoaded(items []suggest.Suggestion) {
   state.loading = false
   state.loadFn = nil
   if len(items) == 0 {
-    state.canceled = true
     return
   }
   state.allItems = items

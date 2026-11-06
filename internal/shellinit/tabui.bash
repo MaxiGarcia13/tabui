@@ -9,11 +9,15 @@
 # Note: binding Tab replaces default bash completion for that key.
 
 tabui-complete() {
-  local new_left
+  local new_left exit_code
   local right="${READLINE_LINE:READLINE_POINT}"
   new_left="$(
     tabui --line="$READLINE_LINE" --cursor="$READLINE_POINT" --cwd="$PWD"
-  )" || return
+  )"
+  exit_code=$?
+  # Exit 2: user canceled the TUI — leave the line alone.
+  (( exit_code == 2 )) && return
+  (( exit_code != 0 )) && return
   [[ -n "$new_left" ]] || return
 
   READLINE_LINE="${new_left}${right}"

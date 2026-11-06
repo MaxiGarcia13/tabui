@@ -1,6 +1,7 @@
 package main
 
 import (
+  "errors"
   "flag"
   "fmt"
   "os"
@@ -99,6 +100,9 @@ func main() {
     } else {
       selected, err = ui.RunLoading(linePrefix, load)
     }
+  }
+  if errors.Is(err, ui.ErrCanceled) {
+    os.Exit(2)
   }
   if err != nil {
     fmt.Fprintf(os.Stderr, "tabui: %v\n", err)

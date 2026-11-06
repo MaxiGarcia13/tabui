@@ -18,6 +18,9 @@ func TestWriteZsh(t *testing.T) {
   if !strings.Contains(out, "bindkey '^I'") {
     t.Fatalf("missing bindkey: %q", out)
   }
+  if !strings.Contains(out, "exit_code == 2") {
+    t.Fatalf("missing cancel exit handling: %q", out)
+  }
 }
 
 func TestWriteBash(t *testing.T) {

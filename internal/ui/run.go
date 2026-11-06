@@ -1,6 +1,7 @@
 package ui
 
 import (
+  "errors"
   "os"
 
   tea "github.com/charmbracelet/bubbletea"
@@ -8,8 +9,13 @@ import (
   "github.com/MaxiGarcia13/tabui/internal/suggest"
 )
 
+// ErrCanceled means the user dismissed the picker (Ctrl+C / Esc).
+// The shell should leave the line unchanged and not fall back to completion.
+var ErrCanceled = errors.New("canceled")
+
 // Run shows a fuzzy list and returns the chosen Value.
-// Empty string means the user canceled.
+// Empty string means no selection (shell may fall back).
+// ErrCanceled means the user dismissed the picker.
 // linePrefix is the command line left of the cursor (for preview).
 func Run(
   items []suggest.Suggestion,
@@ -22,7 +28,7 @@ func Run(
 }
 
 // RunLoading opens the picker with a loading state, runs load in a Bubble Tea
-// Cmd, then fills the list. Empty load results cancel (shell fallback).
+// Cmd, then fills the list. Empty load results return "" (shell fallback).
 func RunLoading(
   linePrefix string,
   load func() []suggest.Suggestion,
@@ -53,8 +59,11 @@ func runPicker(state pickerState) (string, error) {
     return "", err
   }
   result, ok := finalModel.(pickerState)
-  if !ok || result.canceled || result.chosen == "" {
+  if !ok {
     return "", nil
+  }
+  if result.canceled {
+    return "", ErrCanceled
   }
   return result.chosen, nil
 }

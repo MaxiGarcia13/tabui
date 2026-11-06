@@ -71,15 +71,18 @@ func TestLoadedMsgFillsList(t *testing.T) {
   }
 }
 
-func TestLoadedMsgEmptyCancels(t *testing.T) {
+func TestLoadedMsgEmptyQuitsWithoutCancel(t *testing.T) {
   state := newLoadingPickerState("docker ", nil)
   next, cmd := state.Update(loadedMsg{})
   result := next.(pickerState)
-  if !result.canceled {
-    t.Fatal("expected canceled")
+  if result.canceled {
+    t.Fatal("empty load should not mark user cancel")
   }
   if cmd == nil {
     t.Fatal("expected quit cmd")
+  }
+  if result.chosen != "" {
+    t.Fatalf("chosen = %q, want empty", result.chosen)
   }
 }
 

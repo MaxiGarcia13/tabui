@@ -5,14 +5,16 @@
 # On success, tabui prints the full new LBUFFER (e.g. "pnpm run build").
 
 tabui-complete() {
-  local new_left
+  local new_left exit_code
   new_left="$(
     tabui --line="$BUFFER" --cursor="$CURSOR" --cwd="$PWD"
-  )" || {
-    zle expand-or-complete
+  )"
+  exit_code=$?
+  # Exit 2: user canceled the TUI — leave the line alone.
+  if (( exit_code == 2 )); then
     return
-  }
-  if [[ -z "$new_left" ]]; then
+  fi
+  if (( exit_code != 0 )) || [[ -z "$new_left" ]]; then
     zle expand-or-complete
     return
   fi
