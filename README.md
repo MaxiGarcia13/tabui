@@ -2,13 +2,22 @@
 
 A Go CLI + TUI that suggests the **next thing to type** while you compose a shell command — paths, scripts, subcommands, or flags, depending on context.
 
-Press **Tab** in your shell: tabui opens a fuzzy picker with **label** + **detail**, you pick a row, and that token is inserted into the line. Works in any terminal. If nothing matches, the shell falls back to normal completion.
+Press **Tab** in your shell: tabui opens a fuzzy picker with **label** + **detail**, you pick a row, and that token is inserted into the line. Works on any OS with a supported Go toolchain, and in any terminal. Shell integration ships for zsh and bash (`tabui init`); if nothing matches, the shell falls back to normal completion.
 
 | You are typing | tabui suggests |
 |----------------|----------------|
 | `pnpm run ` / `npm run ` | scripts from nearest `package.json` |
 | `mv ` / `cp ` / `rm ` / `cd ` | files and folders (paths); curated flags when the token starts with `-` |
 | `docker ` / `git ` / `npm ` / `brew ` / … | subcommands and flags from `cmd [sub…] --help` (cached) |
+
+## Requirements
+
+| Requirement | Notes |
+|-------------|--------|
+| **Go** 1.26+ | Needed to build/install (`go install` / `go build`) |
+| **SQLite** | Bundled via [`modernc.org/sqlite`](https://pkg.go.dev/modernc.org/sqlite) (pure Go — no system SQLite). Used to cache CLI `--help` results; if the cache can’t open, help still works without persistence |
+
+Runtime: a TTY-capable terminal and zsh or bash for the Tab widget.
 
 ## Provider order
 
@@ -51,7 +60,7 @@ Target: suggest the next token from context (package scripts, paths, flags, …)
 
 ## Install
 
-Requires Go 1.26+.
+See [Requirements](#requirements).
 
 1. Install the binary onto your `PATH`:
 
