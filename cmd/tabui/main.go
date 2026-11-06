@@ -5,6 +5,7 @@ import (
   "fmt"
   "os"
 
+  "github.com/MaxiGarcia13/tabui/internal/clihelp"
   "github.com/MaxiGarcia13/tabui/internal/cmdline"
   "github.com/MaxiGarcia13/tabui/internal/package_scripts"
   "github.com/MaxiGarcia13/tabui/internal/path"
@@ -64,6 +65,11 @@ func main() {
     Cwd:    workingDir,
   }
 
+  linePrefix := *line
+  if cursorOffset < len(linePrefix) {
+    linePrefix = linePrefix[:cursorOffset]
+  }
+
   suggestions := suggest.FirstMatch(
     context,
     suggest.Funcs{
@@ -75,16 +81,25 @@ func main() {
       SuggestFn: path.Suggest,
     },
   )
-  if len(suggestions) == 0 {
-    return
-  }
 
-  linePrefix := *line
-  if cursorOffset < len(linePrefix) {
-    linePrefix = linePrefix[:cursorOffset]
+  var (
+    selected string
+    err      error
+  )
+  switch {
+  case len(suggestions) > 0:
+    selected, err = ui.Run(suggestions, linePrefix)
+  default:
+    items, matched, load := clihelp.Lookup(context)
+    if !matched {
+      return
+    }
+    if load == nil {
+      selected, err = ui.Run(items, linePrefix)
+    } else {
+      selected, err = ui.RunLoading(linePrefix, load)
+    }
   }
-
-  selected, err := ui.Run(suggestions, linePrefix)
   if err != nil {
     fmt.Fprintf(os.Stderr, "tabui: %v\n", err)
     os.Exit(1)
