@@ -14,6 +14,7 @@ import (
 var ErrCanceled = errors.New("canceled")
 
 // Run shows a fuzzy list and returns the chosen Value.
+// A single item is returned without opening the picker.
 // Empty string means no selection (shell may fall back).
 // ErrCanceled means the user dismissed the picker.
 // linePrefix is the command line left of the cursor (for preview).
@@ -24,11 +25,15 @@ func Run(
   if len(items) == 0 {
     return "", nil
   }
+  if len(items) == 1 {
+    return items[0].Value, nil
+  }
   return runPicker(newPickerState(items, linePrefix))
 }
 
 // RunLoading opens the picker with a loading state, runs load in a Bubble Tea
-// Cmd, then fills the list. Empty load results return "" (shell fallback).
+// Cmd, then fills the list. A single loaded item is chosen without showing the
+// list. Empty load results return "" (shell fallback).
 func RunLoading(
   linePrefix string,
   load func() []suggest.Suggestion,

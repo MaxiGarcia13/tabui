@@ -45,11 +45,34 @@ func TestLoadingInitReturnsCmd(t *testing.T) {
   }
 }
 
-func TestLoadedMsgFillsList(t *testing.T) {
+func TestLoadedMsgSingleAutoChooses(t *testing.T) {
   state := newLoadingPickerState("docker ", nil)
   next, cmd := state.Update(loadedMsg{
     items: []suggest.Suggestion{
       {Label: "run", Value: "run", Detail: "Create a container"},
+    },
+  })
+  result := next.(pickerState)
+  if cmd == nil {
+    t.Fatal("expected quit cmd")
+  }
+  if result.loading {
+    t.Fatal("expected loading false")
+  }
+  if result.chosen != "run" {
+    t.Fatalf("chosen = %q, want run", result.chosen)
+  }
+  if result.canceled {
+    t.Fatal("auto-choose should not mark cancel")
+  }
+}
+
+func TestLoadedMsgMultipleFillsList(t *testing.T) {
+  state := newLoadingPickerState("docker ", nil)
+  next, cmd := state.Update(loadedMsg{
+    items: []suggest.Suggestion{
+      {Label: "run", Value: "run", Detail: "Create a container"},
+      {Label: "build", Value: "build", Detail: "Build an image"},
     },
   })
   result := next.(pickerState)
@@ -59,7 +82,7 @@ func TestLoadedMsgFillsList(t *testing.T) {
   if result.loading {
     t.Fatal("expected loading false")
   }
-  if len(result.filtered) != 1 || result.filtered[0].Value != "run" {
+  if len(result.filtered) != 2 {
     t.Fatalf("filtered = %+v", result.filtered)
   }
   view := result.View()

@@ -11,6 +11,10 @@ func (state pickerState) Update(
     if len(state.allItems) == 0 {
       return state, tea.Quit
     }
+    if len(state.allItems) == 1 {
+      state.chosen = state.allItems[0].Value
+      return state, tea.Quit
+    }
     return state, nil
   case tea.WindowSizeMsg:
     if message.Height > 0 {
