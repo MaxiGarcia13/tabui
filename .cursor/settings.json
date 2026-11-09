@@ -1,0 +1,18 @@
+{
+  "[go]": {
+    "editor.insertSpaces": true,
+    "editor.tabSize": 2,
+    "editor.detectIndentation": false,
+    "editor.formatOnSave": false,
+    "editor.defaultFormatter": null,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "never",
+      "source.fixAll": "never"
+    }
+  },
+  "go.formatTool": "default",
+  "[makefile]": {
+    "editor.insertSpaces": true,
+    "editor.tabSize": 2
+  }
+}
