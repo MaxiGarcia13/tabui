@@ -115,7 +115,7 @@ jobs:
             git tag "$tag"
             git push origin "$tag"
           else
-            git commit -m "chore: release ${tag} [skip ci]"
+            git commit -m "chore: release ${tag}"
             git tag "$tag"
             git push origin HEAD:main
             git push origin "$tag"
